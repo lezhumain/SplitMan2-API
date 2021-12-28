@@ -35,8 +35,8 @@ class AItem {
 public class SaveController {
     private static final String COOKIE_NAME = "Spliman_Session";
 
-//    private final IDataService _service = new SQLLiteService();
-    private final IDataService _service = new FileService();
+    private final IDataService _service = new SQLLiteService();
+//    private final IDataService _service = new FileService();
 
     //    private final String _dbFile = Paths.get(System.getProperty("user.dir"), "target.txt").toString();
 

@@ -123,6 +123,7 @@ public class SQLiteJDBC {
         } catch ( Exception e ) {
             // System.out.println("Table not created");
             System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+            this.closeDB();
 //            System.exit(0);
 
             return false;
@@ -218,6 +219,8 @@ public class SQLiteJDBC {
             return true;
         } catch ( Exception e ) {
             System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+
+            this.closeDB();
 //            System.exit(0);
             return false;
         }

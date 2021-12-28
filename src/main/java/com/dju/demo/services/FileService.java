@@ -13,15 +13,9 @@ public class FileService extends ADataService {
     private final String _dbFile = Paths.get(".", "target.txt").toString(); // TODO remove
 
     @Override
-    public String getStringData() {
-        try {
-            final String fileContent = FileHelper.get_instance().readLastLine(_dbFile);
-            return fileContent;
-        } catch (IOException e) {
-//            return String.format("{\"error\"}: \"%s\"", e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
+    protected String doGetStringData() throws IOException {
+        final String fileContent = FileHelper.get_instance().readLastLine(_dbFile);
+        return fileContent;
     }
 
     @Override

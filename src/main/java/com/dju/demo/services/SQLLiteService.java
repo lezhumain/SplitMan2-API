@@ -27,13 +27,8 @@ public class SQLLiteService extends ADataService {
     }
 
     @Override
-    public String getStringData() {
-        String data = null;
-        try {
-            data = selectData();
-        } catch (SQLiteException e) {
-            e.printStackTrace();
-        }
+    public String doGetStringData() throws SQLiteException {
+        String data = selectData();
         return data;
     }
 

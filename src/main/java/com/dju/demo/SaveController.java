@@ -58,6 +58,13 @@ public class SaveController {
         return _service.getStringData();
     }
 
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("/version")
+    public String version() {
+        return "TODO";
+    }
+
     @CrossOrigin(origins = "http://127.0.0.1:4200")
     @GetMapping("/get")
     public String getAll(@RequestHeader Map<String, String> headers, @CookieValue(COOKIE_NAME) String fooCookie, HttpServletResponse response) {

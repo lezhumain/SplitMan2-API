@@ -92,9 +92,11 @@ public class SQLiteJDBC {
 
     public boolean createTable(String sql) {
         //Create the observable
+        System.out.println("isNoSuchTable 11: creating table: ");
         Single<Boolean> testSingle = SQLiteJDBC._dbClosed
                 .firstOrError()
                 .map(aBool -> {
+                    System.out.println("isNoSuchTable 11: creating table");
                     return doCreateTable(sql);
                 });
 
@@ -121,6 +123,7 @@ public class SQLiteJDBC {
         } catch ( Exception e ) {
             // System.out.println("Table not created");
             System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+            this.closeDB();
 //            System.exit(0);
 
             return false;
@@ -142,10 +145,12 @@ public class SQLiteJDBC {
         return testSingle.blockingGet();
     }
 
-    private String doSelectData(String sql) throws SQLiteException {
+    private String doSelectData(String sql) throws org.sqlite.SQLiteException {
         //        Connection c = this.openDB();
         this.openDB();
         Statement stmt = null;
+
+        boolean isClosed = false;
 
         try {
             Class.forName("org.sqlite.JDBC");
@@ -164,10 +169,13 @@ public class SQLiteJDBC {
             stmt.close();
 //            this._connection.close();
             this.closeDB();
+            isClosed = true;
             // System.out.println("Records created successfully");
             return name;
         } catch ( Exception e ) {
             System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+
+            this.closeDB();
 
             if(e.getMessage().contains("no such table")) {
                 throw (org.sqlite.SQLiteException)e;
@@ -211,6 +219,8 @@ public class SQLiteJDBC {
             return true;
         } catch ( Exception e ) {
             System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+
+            this.closeDB();
 //            System.exit(0);
             return false;
         }

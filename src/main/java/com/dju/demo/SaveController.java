@@ -35,8 +35,8 @@ class AItem {
 public class SaveController {
     private static final String COOKIE_NAME = "Spliman_Session";
 
-//    private final IDataService _service = new SQLLiteService();
-    private final IDataService _service = new FileService();
+    private final IDataService _service = new SQLLiteService();
+//    private final IDataService _service = new FileService();
 
     //    private final String _dbFile = Paths.get(System.getProperty("user.dir"), "target.txt").toString();
 
@@ -56,6 +56,13 @@ public class SaveController {
 //        }
 
         return _service.getStringData();
+    }
+
+
+    @CrossOrigin(origins = "*")
+    @GetMapping("/version")
+    public String version() {
+        return "TODO";
     }
 
     @CrossOrigin(origins = "http://127.0.0.1:4200")

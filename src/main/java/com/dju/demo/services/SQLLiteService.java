@@ -12,7 +12,7 @@ public class SQLLiteService extends ADataService {
         super();
         try {
             final String d = selectData();
-        } catch (SQLiteException e) {
+        } catch (Exception e) {
             if(e.getMessage().contains("no such table")) {
                 _helper.createTable("CREATE TABLE SPLITMAN (VALUE  TEXT  NOT NULL)");
             }
@@ -27,13 +27,8 @@ public class SQLLiteService extends ADataService {
     }
 
     @Override
-    public String getStringData() {
-        String data = null;
-        try {
-            data = selectData();
-        } catch (SQLiteException e) {
-            e.printStackTrace();
-        }
+    public String doGetStringData() throws SQLiteException {
+        String data = selectData();
         return data;
     }
 

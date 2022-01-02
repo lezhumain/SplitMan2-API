@@ -1,10 +1,12 @@
 package com.dju.demo;
 
+import com.dju.demo.helpers.CMDHelper;
+import com.dju.demo.helpers.CMDHelperResponse;
 import com.dju.demo.helpers.FileHelper;
 import com.dju.demo.helpers.ND5Helper;
-import com.dju.demo.services.FileService;
 import com.dju.demo.services.IDataService;
 import com.dju.demo.services.SQLLiteService;
+import io.restassured.internal.util.IOUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -13,7 +15,10 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
@@ -63,6 +68,34 @@ public class SaveController {
     @GetMapping("/version")
     public String version() {
         return "TODO";
+    }
+
+    @CrossOrigin(origins = "*")
+    @PostMapping("/genimg")
+    public byte[] genimg(@RequestBody String res, HttpServletResponse response) throws ParseException, IOException, InterruptedException {
+        final JSONParser jp = new JSONParser();
+        final JSONObject o = (JSONObject)jp.parse(res);
+
+        final CMDHelperResponse resp =  new CMDHelper().genImg(
+                (String)o.get("name"), (String)o.get("surname"),(String)o.get("birth"), (String)o.get("date"));
+
+        if(resp == null || resp.response == null || resp.response.length() == 0 || resp.exitCode == 1) {
+            response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
+            return null;
+        }
+
+        response.setContentType("image/png");
+//        return new File(resp.filePath);
+
+
+//        InputStream in = getClass()
+//                .getResourceAsStream(resp.filePath);
+//        return IOUtils.toByteArray(in);
+
+        Path path = Paths.get(resp.filePath);
+        byte[] data = Files.readAllBytes(path);
+
+        return data;
     }
 
     @CrossOrigin(origins = "http://127.0.0.1:4200")

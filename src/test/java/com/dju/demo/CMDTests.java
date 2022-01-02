@@ -20,8 +20,8 @@ class CMDTests {
 	@Test
 	public void testRunCMD() throws IOException, InterruptedException {
 		final String[] cmd = new String[] {
-			"C:\\Users\\djuuu\\AppData\\Local\\Programs\\Python\\Python39\\python",
-			"C:\\Users\\djuuu\\Dropbox\\progWeb\\LecteurPS\\LecteurPS.py",
+			"python",
+			"LecteurPS.py",
 			"-n", "[NOM2]", "-s", "[PRENOM]", "-b", "[DATE_NAISS]", "-d", "[DATE]"
 		};
 

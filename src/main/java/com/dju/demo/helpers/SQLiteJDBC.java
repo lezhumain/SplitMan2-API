@@ -32,7 +32,6 @@ public class SQLiteJDBC {
             if (this._connection != null) {
                 if (!this._connection.isClosed()) {
                     this._connection.close();
-                    System.out.println("\t[" + SQLiteJDBC.openDBCount + "] closedDB: " + SQLiteJDBC.subCount);
                 }
                 this._connection = null;
             }
@@ -41,7 +40,7 @@ public class SQLiteJDBC {
         });
 
         _dbClosed.subscribe((p) -> {
-            System.out.println("handled close.");
+//            System.out.println("handled close.");
         });
     }
 
@@ -62,7 +61,6 @@ public class SQLiteJDBC {
 
                 @Override
                 public void onSuccess(Object o) {
-                    System.out.println("\t[" + this._id + "] openDb called.");
                     helper.doOpenDB();
                 }
 

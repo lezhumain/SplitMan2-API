@@ -6,7 +6,6 @@ import com.dju.demo.helpers.FileHelper;
 import com.dju.demo.helpers.ND5Helper;
 import com.dju.demo.services.IDataService;
 import com.dju.demo.services.SQLLiteService;
-import io.restassured.internal.util.IOUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -15,14 +14,15 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 //import io.restassured.path.json.JsonPath;
@@ -428,6 +428,28 @@ public class SaveController {
         final JSONArray arr = this.doInvite(userID, res);
 //        FileHelper.get_instance().writeFile(_dbFile, arr.toString());
         _service.addData(arr);
+
+        // checking invite is present
+        final JSONParser jp = new JSONParser();
+        final JSONObject o = (JSONObject)jp.parse(res);
+        final String email = (String)o.get("email");
+        JSONObject targetUser = (JSONObject) (arr.stream()
+                .filter(o1 -> ((JSONObject)o1).get("type").equals("user")
+                        && (((JSONObject)o1).get("email")).equals(email))
+                .findFirst().orElse(null));
+
+        JSONArray invites = (JSONArray) targetUser.get("invites");
+        final String testingTripID = String.valueOf(o.get("tripID"));
+
+        final boolean testingHasTripID = (invites.stream().filter(o1 -> {
+            return String.valueOf(((JSONObject)o1).get("tripID")).equals(testingTripID);
+        }).findFirst().orElse(null)) != null;
+
+        if(!testingHasTripID) {
+            System.out.println("invite error");
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
 
         response.setStatus(HttpServletResponse.SC_NO_CONTENT);
     }

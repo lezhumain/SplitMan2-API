@@ -6,7 +6,6 @@ import com.dju.demo.helpers.FileHelper;
 import com.dju.demo.helpers.ND5Helper;
 import com.dju.demo.services.IDataService;
 import com.dju.demo.services.SQLLiteService;
-import io.restassured.internal.util.IOUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -15,10 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
@@ -333,7 +330,7 @@ public class SaveController {
         // yes
         // make hash
         final String timeStamp = new Date().toString(),
-                userHash = ND5Helper.hash(pass, userName, timeStamp);
+                userHash = ND5Helper.hashForSession(pass, userName, timeStamp);
 
         // store hash + userID
         org.json.simple.JSONObject sessionRes = new org.json.simple.JSONObject();
@@ -349,18 +346,20 @@ public class SaveController {
         return doSessionLogin(pass, userName, getAllObj());
     }
 
-    public JSONObject getUser(final String pass, final String userName) throws IOException, ParseException {
+    public JSONObject getUser(final String pass, final String userName) throws IOException, ParseException, NoSuchAlgorithmException {
         return getUser(pass, userName, getAllObj());
     }
 
-    public JSONObject getUser(final String pass, final String userName, final String all) throws IOException, ParseException {
+    public JSONObject getUser(final String pass, final String userName, final String all) throws IOException, ParseException, NoSuchAlgorithmException {
         final JSONParser jp = new JSONParser();
         JSONArray arr = (JSONArray)jp.parse(all);
+
+        final String hashPass = ND5Helper.hash(pass);
 
         Optional<JSONObject> targetUser = arr.stream()
                 .filter(o1 -> ((JSONObject)o1).get("type").equals("user")
                         && (((JSONObject)o1).get("username")).equals(userName)
-                        && (pass == null || (((JSONObject)o1).get("password")).equals(pass)))
+                        && (pass == null || (((JSONObject)o1).get("password")).equals(hashPass)))
                 .findFirst();
 
         return targetUser.orElse(null);
@@ -513,14 +512,14 @@ public class SaveController {
         return arr;
     }
 
-    public JSONArray updateStuff(int usserID, String res) throws IOException, ParseException {
+    public JSONArray updateStuff(int usserID, String res) throws IOException, ParseException, NoSuchAlgorithmException {
         // TODO get userID
         final String all = getAllObj();
 ////        org.json.simple.parser.JSONParser jp = new JSONParser();
         return this.updateStuff(usserID, res, all);
     }
 
-    public JSONArray updateStuff(int usserID, String res, String all) throws ParseException {
+    public JSONArray updateStuff(int usserID, String res, String all) throws ParseException, NoSuchAlgorithmException {
         org.json.simple.parser.JSONParser jp = new JSONParser();
         org.json.simple.JSONObject objectToUpdateOrAdd = (org.json.simple.JSONObject)jp.parse(res);
 
@@ -539,6 +538,8 @@ public class SaveController {
                 return null;
             }
 
+            // adding a user
+
             final int userID = (int)Integer.parseInt(objectToUpdateOrAdd.get("id").toString());
             final String userEmail = (String)objectToUpdateOrAdd.get("email");
 
@@ -548,6 +549,10 @@ public class SaveController {
                     || ((JSONObject)o1).get("email").equals(userEmail) ).findFirst().isPresent()) {
                 return null;
             }
+
+            // hash pass
+            final String clearPass = (String)(((JSONObject)objectToUpdateOrAdd).get("password"));
+            objectToUpdateOrAdd.replace("password", ND5Helper.hash(clearPass));
 
             allObjects.add(objectToUpdateOrAdd);
             return allObjects;

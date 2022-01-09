@@ -354,12 +354,12 @@ public class SaveController {
         final JSONParser jp = new JSONParser();
         JSONArray arr = (JSONArray)jp.parse(all);
 
-        final String hashPass = ND5Helper.hash(pass);
+        final String hashPass = pass != null ? ND5Helper.hash(pass) : null;
 
         Optional<JSONObject> targetUser = arr.stream()
                 .filter(o1 -> ((JSONObject)o1).get("type").equals("user")
                         && (((JSONObject)o1).get("username")).equals(userName)
-                        && (pass == null || (((JSONObject)o1).get("password")).equals(hashPass)))
+                        && (hashPass == null || (((JSONObject)o1).get("password")).equals(hashPass)))
                 .findFirst();
 
         return targetUser.orElse(null);

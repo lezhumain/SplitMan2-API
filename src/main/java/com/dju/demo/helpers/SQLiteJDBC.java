@@ -277,7 +277,7 @@ public class SQLiteJDBC {
 
         System.out.println("Table created.");
 
-        final String json = "[{\"password\":\"s\",\"invites\":[],\"id\":1,\"type\":\"user\",\"email\":\"hatsune.miku.asb@wspt.co.uk\",\"username\":\"s\"},{\"password\":\"a\",\"invites\":[],\"id\":2,\"type\":\"user\",\"email\":\"le_zhumain@msn.com\",\"username\":\"a\"}]";
+        final String json = "[{\"password\":\"0CC175B9C0F1B6A831C399E269772661\",\"invites\":[],\"id\":2,\"type\":\"user\",\"email\":\"le_zhumain@msn.com\",\"username\":\"a\"},{\"password\":\"03C7C0ACE395D80182DB07AE2C30F034\",\"invites\":[],\"id\":1,\"type\":\"user\",\"email\":\"hatsune.miku.asb@wspt.co.uk\",\"username\":\"s\"}]";
         res = helper.insertData(String.format("INSERT INTO SPLITMAN (VALUE) VALUES ('%s')", json));
         if(res) {
             System.out.println("Data added.");

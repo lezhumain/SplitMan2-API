@@ -98,7 +98,7 @@ public class SaveController {
         return data;
     }
 
-    @CrossOrigin(origins = "http://127.0.0.1:4200")
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
     @GetMapping("/get")
     public String getAll(@RequestHeader Map<String, String> headers, @CookieValue(COOKIE_NAME) String fooCookie, HttpServletResponse response) {
         response.addHeader("Access-Control-Allow-Credentials", "true");
@@ -146,14 +146,14 @@ public class SaveController {
         return o.toString();
     }
 
-    @CrossOrigin(origins = "http://127.0.0.1:4200")
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
     @GetMapping("/path")
     public String getPath() {
         Path p = Paths.get(".").toAbsolutePath();
         return p.toString();
     }
 
-    @CrossOrigin(origins = "http://127.0.0.1:4200")
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
     @PostMapping("/save")
     public void saveAll(@CookieValue(COOKIE_NAME) String fooCookie, @RequestHeader Map<String, String> headers, @RequestBody String res) throws IOException, ParseException {
         // TODO get userID
@@ -178,7 +178,7 @@ public class SaveController {
         _service.addData(o);
     }
 
-    @CrossOrigin(origins = "http://127.0.0.1:4200")
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
     @PostMapping("/login")
     public JSONObject login(@RequestHeader Map<String, String> headers, @RequestBody String res, HttpServletResponse response) throws IOException, ParseException, NoSuchAlgorithmException {
         // TODO get userID
@@ -191,44 +191,53 @@ public class SaveController {
         final String pass = (String) o.get("password"),
                 userName = (String) o.get("username");
 
-        org.json.simple.JSONObject sessionRes = doSessionLogin(pass, userName);
-        if(sessionRes == null) {
-            // return error 401
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return null;
-        }
+        APIResult sessionRes = doSessionLogin(pass, userName);
+        JSONObject us = sessionRes.toJson();
 
-        JSONArray allSessions = getAllSessions();
-        if(allSessions == null || allSessions.size() == 0) {
-            allSessions = new JSONArray();
-        }
+        if(!sessionRes.hasError) {
+            response.setStatus(HttpServletResponse.SC_OK);
 
-        Optional<JSONObject> alreadyHashed = allSessions
-                .stream().filter(o1 -> ((JSONObject)o1).get("username").equals(userName))
-                .findFirst();
+            JSONArray allSessions = getAllSessions();
+            if (allSessions == null || allSessions.size() == 0) {
+                allSessions = new JSONArray();
+            }
 
-        if(!alreadyHashed.isPresent()) {
-            allSessions.add(sessionRes);
-            FileHelper.get_instance().writeFile(_sessionFile, allSessions.toString());
+            Optional<JSONObject> alreadyHashed = allSessions
+                    .stream().filter(o1 -> ((JSONObject) o1).get("username").equals(userName))
+                    .findFirst();
+
+            if (!alreadyHashed.isPresent()) {
+                JSONObject sessClone = (JSONObject)((JSONObject)us.get("result")).clone();
+                sessClone.remove("user");
+                allSessions.add(sessClone);
+                FileHelper.get_instance().writeFile(_sessionFile, allSessions.toString());
+            } else {
+                final String existingHash = (String) alreadyHashed.get().get("hash");
+//            sessionRes.result.remove("hash");
+                sessionRes.result.replace("hash", existingHash);
+            }
+
+            // add session cookie
+            Cookie cook = new Cookie(COOKIE_NAME, (String) sessionRes.result.get("hash"));
+            cook.setHttpOnly(true);
+            cook.setPath("/");
+            cook.setSecure(true);
+
+            response.addCookie(cook);
+            response.setStatus(HttpServletResponse.SC_OK);
+
+
+            us = sessionRes.result.get("user") != null ? (JSONObject) sessionRes.result.get("user") : null;
+//            this._currentUser = null;
+
+//        return us;
+
+//        APIResult sessionRes = new APIResult("HI", null, true);
         }
         else {
-            final String existingHash = (String) alreadyHashed.get().get("hash");
-            sessionRes.remove("hash");
-            sessionRes.put("hash", existingHash);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            us.remove("user");
         }
-
-        // add session cookie
-        Cookie cook = new Cookie(COOKIE_NAME, (String) sessionRes.get("hash"));
-        cook.setHttpOnly(true);
-        cook.setPath("/");
-        cook.setSecure(true);
-
-        response.addCookie(cook);
-        response.setStatus(HttpServletResponse.SC_OK);
-
-
-        final JSONObject us = this._currentUser != null ? (JSONObject)this._currentUser.clone() : null;
-        this._currentUser = null;
 
         return us;
     }
@@ -240,10 +249,14 @@ public class SaveController {
 //        final String lastData = fioleContent == null || fioleContent.equals("") ? "[]" : ""; // TODO
         final String lastData = fioleContent == null || fioleContent.equals("") ? "[]" : fioleContent;
 
-        return (org.json.simple.JSONArray)jp.parse(lastData);
+        try {
+            return (JSONArray)jp.parse(lastData);
+        } catch (ParseException e) {
+            return new JSONArray();
+        }
     }
 
-    @CrossOrigin(origins = "http://127.0.0.1:4200")
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
     @GetMapping("/logout")
     public void logout(@CookieValue(COOKIE_NAME) String fooCookie, HttpServletResponse response) throws IOException, ParseException, NoSuchAlgorithmException {
 
@@ -316,21 +329,47 @@ public class SaveController {
                 .findFirst().orElse(null);
     }
 
-    public JSONObject doSessionLogin(final String pass, final String userName, final String all) throws IOException, ParseException, NoSuchAlgorithmException {
+    class APIResult {
+        String message;
+        JSONObject result;
+        boolean hasError;
+
+        APIResult(String msg, JSONObject res, boolean hasError) {
+            message = msg;
+            result = res;
+            this.hasError = hasError;
+        }
+
+        public JSONObject toJson() {
+            final JSONObject o = new JSONObject();
+            o.put("message", message);
+            o.put("result", result);
+            o.put("hasError", hasError);
+            return o;
+        }
+    }
+
+    public APIResult doSessionLogin(final String pass, final String userName, final String all) throws IOException, ParseException, NoSuchAlgorithmException {
         // check user exist
         org.json.simple.JSONObject targetUser = getUser(pass, userName, all);
 
         // no
         if(targetUser == null) {
-            return null;
+            JSONObject r = new JSONObject();
+            r.put("data", all);
+            return new APIResult("Wrong pass or username.", r, true);
         }
 
-        this._currentUser = targetUser;
+//        this._currentUser = targetUser;
 
         // yes
         // make hash
         final String timeStamp = new Date().toString(),
                 userHash = ND5Helper.hashForSession(pass, userName, timeStamp);
+
+        if(userHash == null || userHash.equals("")) {
+            return new APIResult("Couldn't create hash.", null, true);
+        }
 
         // store hash + userID
         org.json.simple.JSONObject sessionRes = new org.json.simple.JSONObject();
@@ -338,11 +377,12 @@ public class SaveController {
         sessionRes.put("hash", userHash);
         //noinspection unchecked
         sessionRes.put("username", userName);
+        sessionRes.put("user", targetUser);
 
-        return sessionRes;
+        return new APIResult("", sessionRes, false);
     }
 
-    private JSONObject doSessionLogin(String pass, String userName) throws IOException, ParseException, NoSuchAlgorithmException {
+    private APIResult doSessionLogin(String pass, String userName) throws IOException, ParseException, NoSuchAlgorithmException {
         return doSessionLogin(pass, userName, getAllObj());
     }
 
@@ -396,7 +436,7 @@ public class SaveController {
         return userID;
     }
 
-    @CrossOrigin(origins = "http://127.0.0.1:4200")
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
     @PostMapping("/saveOne")
     public void saveOne(@CookieValue(COOKIE_NAME) String fooCookie, @RequestHeader Map<String, String> headers, @RequestBody String res, HttpServletResponse response) throws IOException, ParseException, NoSuchAlgorithmException
     {
@@ -416,7 +456,7 @@ public class SaveController {
         response.setStatus(HttpServletResponse.SC_NO_CONTENT);
     }
 
-    @CrossOrigin(origins = "http://127.0.0.1:4200")
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
     @PostMapping("/invite")
     public void invite(@CookieValue(COOKIE_NAME) String fooCookie, @RequestHeader Map<String, String> headers, @RequestBody String res, HttpServletResponse response) throws IOException, ParseException {
         final int userID = this.checkUserID(fooCookie);

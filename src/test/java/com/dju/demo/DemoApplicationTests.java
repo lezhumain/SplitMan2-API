@@ -39,10 +39,10 @@ class DemoApplicationTests {
 
         String pass = "s", username = "s";
 //        final String hash = ND5Helper.hash(pass)
-        JSONObject hashRes = (new SaveController()).doSessionLogin(pass, username, all);
-        Assert.assertNotNull(hashRes);
+        SaveController.APIResult hashRes = (new SaveController()).doSessionLogin(pass, username, all);
+        Assert.assertNotNull(hashRes.result);
 
-        System.out.println(hashRes.toJSONString());
+        System.out.println(hashRes.result.toJSONString());
 //        Assert.assertEquals(hashRes.get("hash"), hash);
     }
 

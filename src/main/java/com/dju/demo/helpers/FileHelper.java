@@ -73,7 +73,6 @@ public class FileHelper {
             StringBuilder finalStr = new StringBuilder();
             String str;
             while ((str = reader.readLine()) != null) {
-//                System.out.println(str);
                 finalStr.append(str);
                 finalStr.append(System.getProperty("line.separator"));
             }

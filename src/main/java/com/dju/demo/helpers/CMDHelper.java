@@ -1,9 +1,7 @@
 package com.dju.demo.helpers;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.List;
@@ -29,15 +27,17 @@ public class CMDHelper {
         return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
     }
 
-    public CMDHelperResponse genImg(final String nom, final String prenom, final String birth, final String d) throws IOException, InterruptedException {
+    public CMDHelperResponse genImg(final String nom, final String prenom, final String birth, final String d, String filename) throws IOException, InterruptedException {
         final String scriptPath = "Lecteur";
 
         final String[] cmd = new String[] {
                 "python3",
+
 //                scriptPath + "\\LecteurPS.py",
 //                path.jo scriptPath + "\\LecteurPS.py",
+
                 Paths.get(scriptPath, "LecteurPS.py").toString(), // TODO remove
-                "-n", nom, "-s", prenom, "-b", birth, "-d", d
+                "-n", nom, "-s", prenom, "-b", birth, "-d", d, "-f", filename
         };
 
 
@@ -50,9 +50,11 @@ public class CMDHelper {
 //        final String imgPath = String.format("%s\\%s_%s.png", scriptPath, nom, prenom);
 
 //        final String imgPath = Paths.get(scriptPath, String.format("%s_%s.png", nom, prenom)).toString();
-        final String imgPath = Paths.get(scriptPath, "qrcode_mok_new.jpg").toString();
+        final String imgPath = Paths.get(scriptPath, filename.replace(".", "_new.")).toString();
 
         if(!Files.exists(Path.of(imgPath))) {
+            resp.exitCode = 1000;
+            resp.response = "File wasn't created.";
             return null;
         }
 

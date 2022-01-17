@@ -10,14 +10,15 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.http.MediaType;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -68,15 +69,24 @@ public class SaveController {
     }
 
     @CrossOrigin(origins = "*")
-    @PostMapping("/genimg")
-    public byte[] genimg(@RequestBody String res, HttpServletResponse response) throws ParseException, IOException, InterruptedException {
+    @PostMapping(value = "/genimg", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    public byte[] genimg(@RequestParam String fileName, @RequestParam String payload,
+                         @RequestPart MultipartFile document, HttpServletResponse response) throws ParseException, IOException, InterruptedException {
         final JSONParser jp = new JSONParser();
-        final JSONObject o = (JSONObject)jp.parse(res);
+        final JSONObject o = (JSONObject)jp.parse(payload);
+
+        System.out.println(fileName);
+
+        Path targetPath = Path.of("Lecteur/" + fileName);
+
+        String docType = document.getContentType();
+        byte[] docContent = document.getBytes();
+        Files.write(targetPath, docContent, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
 
         final CMDHelperResponse resp =  new CMDHelper().genImg(
-                (String)o.get("name"), (String)o.get("surname"),(String)o.get("birth"), (String)o.get("date"));
+                (String)o.get("name"), (String)o.get("surname"),(String)o.get("birth"), (String)o.get("date"), fileName);
 
-        if(resp == null || resp.response == null || resp.response.length() == 0 || resp.exitCode == 1) {
+        if(resp == null || resp.response == null || resp.response.length() == 0 || resp.exitCode != 0) {
             response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
             return null;
         }
@@ -92,7 +102,14 @@ public class SaveController {
         Path path = Paths.get(resp.filePath);
         byte[] data = Files.readAllBytes(path);
 
+        if(data.length == 0) {
+            response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
+            return null;
+        }
+
         return data;
+
+//        return new byte[]{};
     }
 
     @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})

@@ -48,7 +48,9 @@ public class CMDHelper {
         }
 
 //        final String imgPath = String.format("%s\\%s_%s.png", scriptPath, nom, prenom);
-        final String imgPath = Paths.get(scriptPath, String.format("%s_%s.png", nom, prenom)).toString();
+
+//        final String imgPath = Paths.get(scriptPath, String.format("%s_%s.png", nom, prenom)).toString();
+        final String imgPath = Paths.get(scriptPath, "qrcode_mok_new.jpg").toString();
 
         if(!Files.exists(Path.of(imgPath))) {
             return null;

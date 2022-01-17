@@ -19,10 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 //import io.restassured.path.json.JsonPath;
@@ -107,7 +104,7 @@ public class SaveController {
 
             JSONArray allSessions = getAllSessions();
             if(allSessions == null || allSessions.size() == 0) {
-                response.setStatus(401);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return null;
             }
 
@@ -115,7 +112,7 @@ public class SaveController {
             final boolean hashExists = session != null;
 
             if(!hashExists) {
-                response.setStatus(401);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return null;
             }
 
@@ -188,8 +185,37 @@ public class SaveController {
         org.json.simple.parser.JSONParser jp = new JSONParser();
         org.json.simple.JSONObject o = (org.json.simple.JSONObject)jp.parse(res);
 
+        response.setStatus(HttpServletResponse.SC_OK);
+
         final String pass = (String) o.get("password"),
                 userName = (String) o.get("username");
+
+        if(pass == null || pass.isEmpty() || userName == null || userName.isEmpty()) {
+            final String cookieStr = headers.get("cookie");
+            final String[] cookies = cookieStr != null && cookieStr.contains(";")
+                    ? cookieStr.split(";")
+                    : new String[]{};
+            final String session_cookie = Arrays.stream(cookies).filter(s -> s.trim().startsWith(COOKIE_NAME + "=")).findFirst().orElse(null);
+            final String fooCookie = session_cookie != null ? session_cookie.split("=")[1] : null;
+
+            if(fooCookie == null || fooCookie.isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return null;
+            }
+
+            JSONObject sessionUser = checkUser(fooCookie);
+            if(sessionUser == null) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return null;
+            }
+//            System.out.println(headers);
+
+            sessionUser.remove("password");
+            sessionUser.remove("password1");
+
+            return sessionUser;
+        }
+
 
         APIResult sessionRes = doSessionLogin(pass, userName);
         JSONObject us = sessionRes.toJson();
@@ -224,8 +250,6 @@ public class SaveController {
             cook.setSecure(true);
 
             response.addCookie(cook);
-            response.setStatus(HttpServletResponse.SC_OK);
-
 
             us = sessionRes.result.get("user") != null ? (JSONObject) sessionRes.result.get("user") : null;
 //            this._currentUser = null;
@@ -405,12 +429,12 @@ public class SaveController {
         return targetUser.orElse(null);
     }
 
-    private int checkUserID(final String fooCookie) {
-        int userID = -2;
+    private JSONObject checkUser(final String fooCookie) {
+//        int userID = -2;
         try {
             JSONArray allSessions = getAllSessions();
             if(allSessions == null || allSessions.size() == 0) {
-                return userID;
+                return null;
             }
 
             // check if hash exists
@@ -418,13 +442,25 @@ public class SaveController {
             final boolean hashExists = session != null;
 
             if(!hashExists) {
-                return -2;
+                return null;
             }
 
             // get user from cooke
             final String username = (String) ((JSONObject)session).get("username");
             final JSONObject user = getUser(null, username);
 
+            return user;
+        }
+        catch (Exception e) {
+            System.out.println("No user_id specified in request");
+            return null;
+        }
+    }
+
+    private int checkUserID(final String fooCookie) {
+        int userID = -2;
+        try {
+            final JSONObject user = checkUser(fooCookie);
 
             // get user ID
             userID = Integer.parseInt(((JSONObject)user).get("id").toString());

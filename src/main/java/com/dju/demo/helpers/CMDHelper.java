@@ -30,18 +30,25 @@ public class CMDHelper {
     }
 
     public CMDHelperResponse genImg(final String nom, final String prenom, final String birth, final String d) throws IOException, InterruptedException {
-        final String scriptPath = "";
+        final String scriptPath = "Lecteur";
 
         final String[] cmd = new String[] {
-                "python",
-                scriptPath + "\\LecteurPS.py",
+                "python3",
+//                scriptPath + "\\LecteurPS.py",
+//                path.jo scriptPath + "\\LecteurPS.py",
+                Paths.get(scriptPath, "LecteurPS.py").toString(), // TODO remove
                 "-n", nom, "-s", prenom, "-b", birth, "-d", d
         };
 
 
         CMDHelperResponse resp = new CMDHelper().runCMD(List.of(cmd));
 
-        final String imgPath = String.format("%s\\%s_%s.png", scriptPath, nom, prenom);
+        if(resp.exitCode == 1) {
+            return resp;
+        }
+
+//        final String imgPath = String.format("%s\\%s_%s.png", scriptPath, nom, prenom);
+        final String imgPath = Paths.get(scriptPath, String.format("%s_%s.png", nom, prenom)).toString();
 
         if(!Files.exists(Path.of(imgPath))) {
             return null;

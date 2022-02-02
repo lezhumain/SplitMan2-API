@@ -86,30 +86,8 @@ public class SaveController {
         final CMDHelperResponse resp =  new CMDHelper().genImg(
                 (String)o.get("name"), (String)o.get("surname"),(String)o.get("birth"), (String)o.get("date"), fileName);
 
-        if(resp == null || resp.response == null || resp.response.length() == 0 || resp.exitCode != 0) {
-            response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
-            return null;
-        }
-
         response.setContentType("image/png");
-//        return new File(resp.filePath);
-
-
-//        InputStream in = getClass()
-//                .getResourceAsStream(resp.filePath);
-//        return IOUtils.toByteArray(in);
-
-        Path path = Paths.get(resp.filePath);
-        byte[] data = Files.readAllBytes(path);
-
-        if(data.length == 0) {
-            response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
-            return null;
-        }
-
-        return data;
-
-//        return new byte[]{};
+        return docContent;
     }
 
     @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})

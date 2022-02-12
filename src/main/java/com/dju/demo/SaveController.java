@@ -175,7 +175,7 @@ public class SaveController {
     public JSONObject login(@RequestHeader Map<String, String> headers, @RequestBody String res, HttpServletResponse response) throws IOException, ParseException, NoSuchAlgorithmException {
         // TODO get userID
 //        int userID = this.checkUserID(headers);
-        response.addHeader("Access-Control-Allow-Credentials", "true");
+         response.addHeader("Access-Control-Allow-Credentials", "true");
 
         org.json.simple.parser.JSONParser jp = new JSONParser();
         org.json.simple.JSONObject o = (org.json.simple.JSONObject)jp.parse(res);
@@ -468,6 +468,18 @@ public class SaveController {
     }
 
     @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
+    @PostMapping("/register")
+    public void register(@RequestBody String res, HttpServletResponse response) throws IOException, ParseException, NoSuchAlgorithmException {
+//        response.addHeader("Access-Control-Allow-Credentials", "true");
+
+        final JSONArray arr = this.updateStuff(-2, res);
+//        final JSONArray arr = this.updateStuff(-2, "{}");
+        _service.addData(arr);
+
+//        response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+    }
+
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
     @PostMapping("/saveOne")
     public void saveOne(@CookieValue(COOKIE_NAME) String fooCookie, @RequestHeader Map<String, String> headers, @RequestBody String res, HttpServletResponse response) throws IOException, ParseException, NoSuchAlgorithmException
     {
@@ -480,8 +492,6 @@ public class SaveController {
         }
 
         final JSONArray arr = this.updateStuff(userID, res);
-
-//        FileHelper.get_instance().writeFile(_dbFile, arr.toString());
         _service.addData(arr);
 
         response.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -597,7 +607,7 @@ public class SaveController {
         org.json.simple.JSONArray allObjects = (org.json.simple.JSONArray)jp.parse(all);
 
         final JSONObject user0 = SaveController.getUserFromAll(all, usserID);
-        final JSONObject user = SaveController.getUserFromAll(allObjects, usserID);
+        final JSONObject user = usserID == -2 ? null : SaveController.getUserFromAll(allObjects, usserID);
 
         if(user == null) {
             if(usserID != -2) {
@@ -611,19 +621,49 @@ public class SaveController {
 
             // adding a user
 
-            final int userID = (int)Integer.parseInt(objectToUpdateOrAdd.get("id").toString());
+//            final int userID = (int)Integer.parseInt(objectToUpdateOrAdd.get("id").toString());
             final String userEmail = (String)objectToUpdateOrAdd.get("email");
 
-            Object[] allUsers = allObjects.stream().filter(o1 -> ((JSONObject)o1).get("type").equals("user")).toArray();
+            Object[] allUsers = allObjects.stream().filter(o1 -> ((JSONObject)o1).get("type").equals("user"))
+//                    .map(o -> (JSONObject)o)
+                    .toArray();
 
-            if(allObjects.stream().filter(o1 -> intEquals(((JSONObject)o1).get("id"), userID)
+            // get max id
+//            final int userID = (int)Arrays.stream(allUsers).map(o -> Integer.parseInt((String)((JSONObject)o).get("id")))
+//                    .sorted(Comparator.comparingInt(o -> (Integer) o))
+//                    .findFirst()
+//                    .orElse(null);
+
+//            final List<Integer> userIDs = Arrays.stream(allUsers).map(o -> Integer.parseInt((String)((JSONObject)o).get("id")))
+//                    .sorted(Comparator.comparingInt(o -> (Integer) o))
+//                    .collect(Collectors.toList());
+//
+//            final int userID = userIDs.get(0);
+
+            int maxID = 0;
+            for(Object oo: allUsers) {
+                JSONObject o = (JSONObject)oo;
+                Long idLong = (Long) (o.get("id"));
+                int id0 = (int)Integer.parseInt(idLong.toString());
+                if(id0 > maxID) {
+                    maxID = id0;
+                }
+            }
+
+            final int userID = maxID + 1;
+
+            objectToUpdateOrAdd.replace("id", userID);
+
+
+            if(Arrays.stream(allUsers).filter(o1 -> intEquals(((JSONObject)o1).get("id"), userID)
                     || ((JSONObject)o1).get("email").equals(userEmail) ).findFirst().isPresent()) {
                 return null;
             }
 
             // hash pass
             final String clearPass = (String)(((JSONObject)objectToUpdateOrAdd).get("password"));
-            objectToUpdateOrAdd.replace("password", ND5Helper.hash(clearPass));
+            final String md5Pass = ND5Helper.hash(clearPass);
+            objectToUpdateOrAdd.replace("password", md5Pass);
 
             allObjects.add(objectToUpdateOrAdd);
             return allObjects;

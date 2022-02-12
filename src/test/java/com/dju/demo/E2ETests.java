@@ -24,7 +24,7 @@ class E2ETests {
 
 		SaveController sc = new SaveController();
 
-		final int userIdData = 0;
+		final int userIdData = -2;
 
 		JSONArray res1 = sc.updateStuff(-2, "{\n" +
 		"  \"id\": " + userIdData + ",\n" +
@@ -39,7 +39,8 @@ class E2ETests {
 
 		System.out.println(res1.toJSONString());
 
-		final boolean containedb = res1.stream().filter(o1 -> ((int)Integer.parseInt(((JSONObject)o1).get("id").toString()) == userIdData)).findFirst().isPresent();
+//		final boolean containedb = res1.stream().filter(o1 -> ((int)Integer.parseInt(((JSONObject)o1).get("id").toString()) == userIdData)).findFirst().isPresent();
+		final boolean containedb = res1.stream().filter(o1 -> ((JSONObject) o1).get("username").toString().equals("a")).findFirst().isPresent();
 		Assert.assertTrue(containedb);
 
 		E2ETests._db = res1.toString();
@@ -56,7 +57,7 @@ class E2ETests {
 
 		SaveController sc = new SaveController();
 
-		final int userIdData = 100;
+		final int userIdData = -2;
 
 		JSONArray res1 = sc.updateStuff(-2, "{\n" +
 				"  \"id\": " + userIdData + ",\n" +
@@ -71,7 +72,8 @@ class E2ETests {
 
 		System.out.println(res1.toJSONString());
 
-		final boolean containedb = res1.stream().filter(o1 -> ((int)Integer.parseInt(((JSONObject)o1).get("id").toString()) == userIdData)).findFirst().isPresent();
+//		final boolean containedb = res1.stream().filter(o1 -> ((int)Integer.parseInt(((JSONObject)o1).get("id").toString()) == userIdData)).findFirst().isPresent();
+		final boolean containedb = res1.stream().filter(o1 -> ((JSONObject) o1).get("username").toString().equals("s")).findFirst().isPresent();
 		Assert.assertTrue(containedb);
 
 		Assert.assertEquals(res1.size(), 2);

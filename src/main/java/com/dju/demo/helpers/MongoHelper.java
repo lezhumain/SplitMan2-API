@@ -8,11 +8,17 @@ import com.mongodb.client.model.ReplaceOptions;
 import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 import javax.print.Doc;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Filters.eq;
 
@@ -54,22 +60,45 @@ public class MongoHelper {
         System.out.println("Collection created successfully");
     }
 
-    public String selectData(String colName) {
-        List<Document> all = getAllDocs(colName);
+    public String selectData(String colName, final boolean lastBatchOnly) {
+        List<Document> all = getAllDocs(colName, lastBatchOnly);
         String res = "[";
 
-        for(Document d: all) {
-            res += d.toJson();
-            res += ",";
-        }
+        if (all.size() > 0) {
+            for(Document d: all) {
+                res += d.toJson() + ",";
+            }
 
-        res = res.substring(0, res.length() - 2); // remove last ','
+            res = res.substring(0, res.length() - 1); // remove last ','
+        }
         res += "]";
 
         return res;
     }
 
-    public List<Document> getAllDocs(String colName) {
+
+
+    private int getLastBatch(final MongoCollection<Document> collection) {
+        // TODO refactor with getAllDocs
+
+        // Getting the iterable object
+        FindIterable<Document> iterDoc = collection.find();
+        int res = 0;
+        // Getting the iterator
+        Iterator it = iterDoc.iterator();
+        while (it.hasNext()) {
+            Document d = (Document) it.next();
+//            System.out.println(d.toJson());
+
+            int batch = d.containsKey("batch") ? Integer.parseInt(d.get("batch").toString()) : 0;
+            if(batch > res) {
+                res = batch;
+            }
+        }
+        return res;
+    }
+
+    public List<Document> getAllDocs(String colName, final boolean lastBatchOnly) {
         List<Document> ress = new ArrayList<>();
 
         // Accessing the database
@@ -78,6 +107,8 @@ public class MongoHelper {
         // Retrieving a collection
         MongoCollection<Document> collection = database.getCollection(colName);
 
+        final int newBatch = lastBatchOnly ? getLastBatch(collection) : -1;
+
         // Getting the iterable object
         FindIterable<Document> iterDoc = collection.find();
         int i = 1;
@@ -85,8 +116,12 @@ public class MongoHelper {
         Iterator it = iterDoc.iterator();
         while (it.hasNext()) {
             Document d = (Document) it.next();
+            final int dBatch = d.containsKey("batch") ? Integer.parseInt(d.get("batch").toString()) : -1;
+
             System.out.println(d.toJson());
-            ress.add(d);
+            if (newBatch == -1 || newBatch == dBatch) {
+                ress.add(d);
+            }
             i++;
         }
         return ress;
@@ -125,14 +160,31 @@ public class MongoHelper {
         }
     }
 
-    public boolean insertJson(final String colName, final String json) {
+    public boolean insertJson(final String colName, final String json) throws ParseException {
         // Accessing the database
         MongoDatabase database = this._mongo.getDatabase(this._dbName);
 
+        List<Document> docsToAdd = json.startsWith("{")
+            ? Arrays.asList(Document.parse(json))
+            : this.parseList(json);
+
+//        docsToAdd.get(docsToAdd.size() - 1).containsKey("_id")
         // Retrieving a collection
         MongoCollection<Document> collection = database.getCollection(colName);
+
+        final int newBatch = this.getLastBatch(collection) + 1;
+        for (Document toAdd: docsToAdd) {
+            if(toAdd.containsKey("batch")) {
+                toAdd.replace("batch", newBatch);
+            }
+            else {
+                toAdd.put("batch", newBatch);
+            }
+            toAdd.remove("_id");
+        }
+
         try {
-            collection.insertOne(Document.parse(json));
+            collection.insertMany(docsToAdd);
 //            System.out.println("Success! Inserted document id: " + result.getInsertedId());
             return true;
         } catch (MongoException me) {
@@ -140,6 +192,30 @@ public class MongoHelper {
             return false;
         }
     }
+
+    private List<Document> parseList(String json) throws ParseException {
+        JSONParser jp = new JSONParser();
+        JSONArray o = (org.json.simple.JSONArray)jp.parse(json);
+
+        return (List<Document>) o.stream().map(b -> Document.parse(((JSONObject)b).toJSONString()))
+                .collect(Collectors.toList());
+    }
+
+//    public boolean insertAllJson(final String colName, final String json) {
+//        // Accessing the database
+//        MongoDatabase database = this._mongo.getDatabase(this._dbName);
+//
+//        // Retrieving a collection
+//        MongoCollection<Document> collection = database.getCollection(colName);
+//        try {
+//            collection.insertMany();
+////            System.out.println("Success! Inserted document id: " + result.getInsertedId());
+//            return true;
+//        } catch (MongoException me) {
+//            System.err.println("Unable to insert due to an error: " + me);
+//            return false;
+//        }
+//    }
 
 //    public void updateJson(final String colName, final  String json) {
 //        // Accessing the database
@@ -155,7 +231,7 @@ public class MongoHelper {
 //    }
 
     public Document findBy(final String colName, final String key, final String docId) {
-        List<Document> allDocs = getAllDocs(colName);
+        List<Document> allDocs = getAllDocs(colName, true);
         Document res = allDocs.stream()
                 .filter(document -> document.get(key).toString().equals(docId))
                 .findFirst().orElse(null);
@@ -262,6 +338,12 @@ public class MongoHelper {
     }
 
     public boolean insertData(String collectionName, String json) {
-        return insertJson(collectionName, json);
+        try {
+            return insertJson(collectionName, json);
+        } catch (ParseException e) {
+//            throw new RuntimeException(e);
+            System.out.println("Error: " + e.getMessage());
+            return false;
+        }
     }
 }

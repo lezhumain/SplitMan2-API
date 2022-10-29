@@ -25,6 +25,7 @@ public abstract class ADataService implements IDataService {
             }
         }
         catch (Exception e) {
+            System.out.println("Just printing error:");
             e.printStackTrace();
             res = "[]";
         }

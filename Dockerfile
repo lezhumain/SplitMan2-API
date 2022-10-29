@@ -14,6 +14,6 @@ COPY ./target/app.jar /app/
 ##CMD ["mvn", "-v"]
 #CMD ["mvn", "spring-boot:run", "-f", "pom.xml"]
 
-CMD ["java", "-jar", "-f", "/app/app.jar"]
+CMD ["java", "-jar", "/app/app.jar"]
 
 EXPOSE 8080/tcp

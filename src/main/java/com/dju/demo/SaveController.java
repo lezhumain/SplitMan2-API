@@ -475,13 +475,17 @@ public class SaveController {
     @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
     @PostMapping("/register")
     public void register(@RequestBody String res, HttpServletResponse response) throws IOException, ParseException, NoSuchAlgorithmException {
-//        response.addHeader("Access-Control-Allow-Credentials", "true");
+        if (response != null) {
+            response.addHeader("Access-Control-Allow-Credentials", "true");
+        }
 
         final JSONArray arr = this.updateStuff(-2, res);
 //        final JSONArray arr = this.updateStuff(-2, "{}");
         _service.addData(arr);
 
-//        response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        if (response != null) {
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        }
     }
 
     @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
@@ -620,7 +624,7 @@ public class SaveController {
                 return null;
             }
 
-            if(!objectToUpdateOrAdd.get("type").equals("user")) {
+            if(!objectToUpdateOrAdd.containsKey("type") || !objectToUpdateOrAdd.get("type").equals("user")) {
                 return null;
             }
 
@@ -629,7 +633,7 @@ public class SaveController {
 //            final int userID = (int)Integer.parseInt(objectToUpdateOrAdd.get("id").toString());
             final String userEmail = (String)objectToUpdateOrAdd.get("email");
 
-            Object[] allUsers = allObjects.stream().filter(o1 -> ((JSONObject)o1).get("type").equals("user"))
+            Object[] allUsers = allObjects.stream().filter(o1 -> ((JSONObject)o1).containsKey("type") && ((JSONObject)o1).get("type").equals("user"))
 //                    .map(o -> (JSONObject)o)
                     .toArray();
 
@@ -660,15 +664,24 @@ public class SaveController {
             objectToUpdateOrAdd.replace("id", userID);
 
 
-            if(Arrays.stream(allUsers).filter(o1 -> intEquals(((JSONObject)o1).get("id"), userID)
-                    || ((JSONObject)o1).get("email").equals(userEmail) ).findFirst().isPresent()) {
+            final boolean exists = Arrays.stream(allUsers)
+                    .filter(o1 -> intEquals(((JSONObject)o1).get("id"), userID)
+                        || ( ((JSONObject)o1).containsKey("email") && ((JSONObject)o1).get("email").equals(userEmail)) )
+                    .findFirst().isPresent();
+
+            if(exists) {
                 return null;
             }
 
             // hash pass
-            final String clearPass = (String)(((JSONObject)objectToUpdateOrAdd).get("password"));
-            final String md5Pass = ND5Helper.hash(clearPass);
-            objectToUpdateOrAdd.replace("password", md5Pass);
+            final String clearPass = objectToUpdateOrAdd.containsKey("password")
+                ? (String)(((JSONObject)objectToUpdateOrAdd).get("password"))
+                : null;
+
+            if (clearPass != null) {
+                final String md5Pass = ND5Helper.hash(clearPass);
+                objectToUpdateOrAdd.replace("password", md5Pass);
+            }
 
             allObjects.add(objectToUpdateOrAdd);
             return allObjects;

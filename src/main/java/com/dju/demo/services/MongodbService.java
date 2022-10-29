@@ -25,7 +25,8 @@ public class MongodbService extends ADataService {
 
     private String selectData() throws SQLiteException {
         String data = null;
-        data = _helper.selectData(this._collectionName);
+//        data = _helper.selectData(this._collectionName);
+        data = _helper.selectData(this._collectionName, true);
         return data;
     }
 

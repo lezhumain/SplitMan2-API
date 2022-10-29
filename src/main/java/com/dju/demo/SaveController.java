@@ -471,7 +471,7 @@ public class SaveController {
         return userID;
     }
 
-    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
     @PostMapping("/register")
     public void register(@RequestBody String res, HttpServletResponse response) throws IOException, ParseException, NoSuchAlgorithmException {
 //        response.addHeader("Access-Control-Allow-Credentials", "true");

@@ -4,6 +4,7 @@ import com.dju.demo.helpers.CMDHelper;
 import com.dju.demo.helpers.CMDHelperResponse;
 import com.dju.demo.helpers.FileHelper;
 import com.dju.demo.helpers.ND5Helper;
+import com.dju.demo.services.FileService;
 import com.dju.demo.services.IDataService;
 import com.dju.demo.services.MongodbService;
 import com.dju.demo.services.SQLLiteService;
@@ -41,7 +42,10 @@ class AItem {
 public class SaveController {
     private static final String COOKIE_NAME = "Spliman_Session";
 
-    private final IDataService _service = new MongodbService();
+    public static Class aClass = MongodbService.class;
+
+    private final IDataService _service;
+//    private final IDataService _service = new MongodbService();
 //    private final IDataService _service = new SQLLiteService();
 //    private final IDataService _service = new FileService();
 
@@ -50,6 +54,19 @@ public class SaveController {
 //    private final String _dbFile = Paths.get(".", "target.txt").toString(); // TODO remove
     private final String _sessionFile = Paths.get(".", "target_sessions.txt").toString();
     private JSONObject _currentUser;
+
+    SaveController() {
+//        _service = service;
+        if (aClass.equals(MongodbService.class)) {
+            _service = new MongodbService();
+        } else if (aClass.equals(SQLLiteService.class)) {
+            _service = new SQLLiteService();
+        } else if (aClass.equals(FileService.class)) {
+            _service = new FileService();
+        }else {
+            _service = null;
+        }
+    }
 
     // TODO check how to make private
     public String getAllObj() throws IOException, ParseException {

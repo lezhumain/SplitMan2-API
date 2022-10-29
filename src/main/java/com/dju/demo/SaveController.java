@@ -4,6 +4,7 @@ import com.dju.demo.helpers.CMDHelper;
 import com.dju.demo.helpers.CMDHelperResponse;
 import com.dju.demo.helpers.FileHelper;
 import com.dju.demo.helpers.ND5Helper;
+import com.dju.demo.services.FileService;
 import com.dju.demo.services.IDataService;
 import com.dju.demo.services.MongodbService;
 import com.dju.demo.services.SQLLiteService;
@@ -41,7 +42,10 @@ class AItem {
 public class SaveController {
     private static final String COOKIE_NAME = "Spliman_Session";
 
-    private final IDataService _service = new MongodbService();
+    public static Class aClass = MongodbService.class;
+
+    private final IDataService _service;
+//    private final IDataService _service = new MongodbService();
 //    private final IDataService _service = new SQLLiteService();
 //    private final IDataService _service = new FileService();
 
@@ -51,7 +55,21 @@ public class SaveController {
     private final String _sessionFile = Paths.get(".", "target_sessions.txt").toString();
     private JSONObject _currentUser;
 
-    private String getAllObj() throws IOException, ParseException {
+    SaveController() {
+//        _service = service;
+        if (aClass.equals(MongodbService.class)) {
+            _service = new MongodbService();
+        } else if (aClass.equals(SQLLiteService.class)) {
+            _service = new SQLLiteService();
+        } else if (aClass.equals(FileService.class)) {
+            _service = new FileService();
+        }else {
+            _service = null;
+        }
+    }
+
+    // TODO check how to make private
+    public String getAllObj() throws IOException, ParseException {
 //        try {
 //            final String fileContent = FileHelper.get_instance().readFile(_dbFile);
 //            String lastL = getLastLine(fileContent);
@@ -99,7 +117,7 @@ public class SaveController {
     public String getAll(@RequestHeader Map<String, String> headers, @CookieValue(COOKIE_NAME) String fooCookie, HttpServletResponse response) {
         response.addHeader("Access-Control-Allow-Credentials", "true");
         try {
-            final String res = removeAllPasswords(getAllObj());
+            final String res = removeAllPasswords(getAllObj()); // TODO put at the end ?
 
             JSONArray allSessions = getAllSessions();
             if(allSessions == null || allSessions.size() == 0) {
@@ -474,13 +492,17 @@ public class SaveController {
     @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
     @PostMapping("/register")
     public void register(@RequestBody String res, HttpServletResponse response) throws IOException, ParseException, NoSuchAlgorithmException {
-//        response.addHeader("Access-Control-Allow-Credentials", "true");
+        if (response != null) {
+            response.addHeader("Access-Control-Allow-Credentials", "true");
+        }
 
         final JSONArray arr = this.updateStuff(-2, res);
 //        final JSONArray arr = this.updateStuff(-2, "{}");
         _service.addData(arr);
 
-//        response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        if (response != null) {
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        }
     }
 
     @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
@@ -619,7 +641,7 @@ public class SaveController {
                 return null;
             }
 
-            if(!objectToUpdateOrAdd.get("type").equals("user")) {
+            if(!objectToUpdateOrAdd.containsKey("type") || !objectToUpdateOrAdd.get("type").equals("user")) {
                 return null;
             }
 
@@ -628,7 +650,7 @@ public class SaveController {
 //            final int userID = (int)Integer.parseInt(objectToUpdateOrAdd.get("id").toString());
             final String userEmail = (String)objectToUpdateOrAdd.get("email");
 
-            Object[] allUsers = allObjects.stream().filter(o1 -> ((JSONObject)o1).get("type").equals("user"))
+            Object[] allUsers = allObjects.stream().filter(o1 -> ((JSONObject)o1).containsKey("type") && ((JSONObject)o1).get("type").equals("user"))
 //                    .map(o -> (JSONObject)o)
                     .toArray();
 
@@ -659,15 +681,24 @@ public class SaveController {
             objectToUpdateOrAdd.replace("id", userID);
 
 
-            if(Arrays.stream(allUsers).filter(o1 -> intEquals(((JSONObject)o1).get("id"), userID)
-                    || ((JSONObject)o1).get("email").equals(userEmail) ).findFirst().isPresent()) {
+            final boolean exists = Arrays.stream(allUsers)
+                    .filter(o1 -> intEquals(((JSONObject)o1).get("id"), userID)
+                        || ( ((JSONObject)o1).containsKey("email") && ((JSONObject)o1).get("email").equals(userEmail)) )
+                    .findFirst().isPresent();
+
+            if(exists) {
                 return null;
             }
 
             // hash pass
-            final String clearPass = (String)(((JSONObject)objectToUpdateOrAdd).get("password"));
-            final String md5Pass = ND5Helper.hash(clearPass);
-            objectToUpdateOrAdd.replace("password", md5Pass);
+            final String clearPass = objectToUpdateOrAdd.containsKey("password")
+                ? (String)(((JSONObject)objectToUpdateOrAdd).get("password"))
+                : null;
+
+            if (clearPass != null) {
+                final String md5Pass = ND5Helper.hash(clearPass);
+                objectToUpdateOrAdd.replace("password", md5Pass);
+            }
 
             allObjects.add(objectToUpdateOrAdd);
             return allObjects;

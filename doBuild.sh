@@ -17,4 +17,7 @@ function sedi()
 #sedi -e "s|http://127.0.0.1:4200|$1|g" src/main/java/com/dju/demo/SaveController.java
 sedi -e "s|http://127.0.0.1:4200|$1|g" src/main/java/com/dju/demo/HostIP.java
 
+mvn package
+cp target/demo*.jar target/app.jar
+
 docker build -t splitman2api .

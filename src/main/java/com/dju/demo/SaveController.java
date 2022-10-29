@@ -51,7 +51,8 @@ public class SaveController {
     private final String _sessionFile = Paths.get(".", "target_sessions.txt").toString();
     private JSONObject _currentUser;
 
-    private String getAllObj() throws IOException, ParseException {
+    // TODO check how to make private
+    public String getAllObj() throws IOException, ParseException {
 //        try {
 //            final String fileContent = FileHelper.get_instance().readFile(_dbFile);
 //            String lastL = getLastLine(fileContent);
@@ -99,7 +100,7 @@ public class SaveController {
     public String getAll(@RequestHeader Map<String, String> headers, @CookieValue(COOKIE_NAME) String fooCookie, HttpServletResponse response) {
         response.addHeader("Access-Control-Allow-Credentials", "true");
         try {
-            final String res = removeAllPasswords(getAllObj());
+            final String res = removeAllPasswords(getAllObj()); // TODO put at the end ?
 
             JSONArray allSessions = getAllSessions();
             if(allSessions == null || allSessions.size() == 0) {

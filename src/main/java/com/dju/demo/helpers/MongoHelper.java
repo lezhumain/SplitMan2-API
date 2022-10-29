@@ -58,12 +58,13 @@ public class MongoHelper {
         List<Document> all = getAllDocs(colName);
         String res = "[";
 
-        for(Document d: all) {
-            res += d.toJson();
-            res += ",";
-        }
+        if (all.size() > 0) {
+            for(Document d: all) {
+                res += d.toJson() + ",";
+            }
 
-        res = res.substring(0, res.length() - 2); // remove last ','
+            res = res.substring(0, res.length() - 2); // remove last ','
+        }
         res += "]";
 
         return res;

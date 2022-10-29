@@ -5,6 +5,7 @@ import com.dju.demo.helpers.CMDHelperResponse;
 import com.dju.demo.helpers.FileHelper;
 import com.dju.demo.helpers.ND5Helper;
 import com.dju.demo.services.IDataService;
+import com.dju.demo.services.MongodbService;
 import com.dju.demo.services.SQLLiteService;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -23,6 +24,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.dju.demo.HostIP.HOST_IP;
+
 //import io.restassured.path.json.JsonPath;
 
 
@@ -38,7 +41,8 @@ class AItem {
 public class SaveController {
     private static final String COOKIE_NAME = "Spliman_Session";
 
-    private final IDataService _service = new SQLLiteService();
+    private final IDataService _service = new MongodbService();
+//    private final IDataService _service = new SQLLiteService();
 //    private final IDataService _service = new FileService();
 
     //    private final String _dbFile = Paths.get(System.getProperty("user.dir"), "target.txt").toString();
@@ -90,7 +94,7 @@ public class SaveController {
         return docContent;
     }
 
-    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
     @GetMapping("/get")
     public String getAll(@RequestHeader Map<String, String> headers, @CookieValue(COOKIE_NAME) String fooCookie, HttpServletResponse response) {
         response.addHeader("Access-Control-Allow-Credentials", "true");
@@ -138,14 +142,14 @@ public class SaveController {
         return o.toString();
     }
 
-    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
     @GetMapping("/path")
     public String getPath() {
         Path p = Paths.get(".").toAbsolutePath();
         return p.toString();
     }
 
-    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
     @PostMapping("/save")
     public void saveAll(@CookieValue(COOKIE_NAME) String fooCookie, @RequestHeader Map<String, String> headers, @RequestBody String res) throws IOException, ParseException {
         // TODO get userID
@@ -170,7 +174,7 @@ public class SaveController {
         _service.addData(o);
     }
 
-    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
     @PostMapping("/login")
     public JSONObject login(@RequestHeader Map<String, String> headers, @RequestBody String res, HttpServletResponse response) throws IOException, ParseException, NoSuchAlgorithmException {
         // TODO get userID
@@ -275,7 +279,7 @@ public class SaveController {
         }
     }
 
-    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
     @GetMapping("/logout")
     public void logout(@CookieValue(COOKIE_NAME) String fooCookie, HttpServletResponse response) throws IOException, ParseException, NoSuchAlgorithmException {
 
@@ -467,7 +471,7 @@ public class SaveController {
         return userID;
     }
 
-    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
     @PostMapping("/saveOne")
     public void saveOne(@CookieValue(COOKIE_NAME) String fooCookie, @RequestHeader Map<String, String> headers, @RequestBody String res, HttpServletResponse response) throws IOException, ParseException, NoSuchAlgorithmException
     {
@@ -487,7 +491,7 @@ public class SaveController {
         response.setStatus(HttpServletResponse.SC_NO_CONTENT);
     }
 
-    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", "http://127.0.0.1:4200"})
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
     @PostMapping("/invite")
     public void invite(@CookieValue(COOKIE_NAME) String fooCookie, @RequestHeader Map<String, String> headers, @RequestBody String res, HttpServletResponse response) throws IOException, ParseException {
         final int userID = this.checkUserID(fooCookie);

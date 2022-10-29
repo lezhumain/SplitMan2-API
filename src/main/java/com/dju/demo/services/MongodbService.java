@@ -1,5 +1,7 @@
 package com.dju.demo.services;
 
+import com.dju.demo.HostIP;
+import com.dju.demo.helpers.MongoHelper;
 import com.dju.demo.helpers.MongodbHelper;
 import com.dju.demo.helpers.SQLiteJDBC;
 import org.json.simple.JSONArray;
@@ -7,7 +9,8 @@ import org.sqlite.SQLiteException;
 
 public class MongodbService extends ADataService {
     private final String _collectionName = "splitman";
-    private MongodbHelper _helper = new MongodbHelper();
+    private MongodbHelper _helper0 = new MongodbHelper();
+    private MongoHelper _helper = new MongoHelper(HostIP.getIp() , 27017, "AzureDiamond", "hunter2", "mydb");
 
     public MongodbService() {
         super();

@@ -683,7 +683,7 @@ public class SaveController {
 
             final boolean exists = Arrays.stream(allUsers)
                     .filter(o1 -> intEquals(((JSONObject)o1).get("id"), userID)
-                        || ( ((JSONObject)o1).containsKey("email") && ((JSONObject)o1).get("email").equals(userEmail)) )
+                        || ( ((JSONObject)o1).containsKey("email") && ((JSONObject)o1).get("email").equals(userEmail)))
                     .findFirst().isPresent();
 
             if(exists) {

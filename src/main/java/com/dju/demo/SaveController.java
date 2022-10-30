@@ -264,7 +264,7 @@ public class SaveController {
             Cookie cook = new Cookie(COOKIE_NAME, (String) sessionRes.result.get("hash"));
             cook.setHttpOnly(true);
             cook.setPath("/");
-            cook.setSecure(true);
+            cook.setSecure(false); // TODO true when we use https
 
             response.addCookie(cook);
 

@@ -22,6 +22,6 @@ sedi -e "s|http://127.0.0.1:4200|$1|g" src/main/java/com/dju/demo/HostIP.java
 mvn package
 cp target/demo*.jar target/app.jar
 
-cp src/main/java/com/dju/demo/HostIP.java.bk src/main/java/com/dju/demo/HostIP.java
+mv src/main/java/com/dju/demo/HostIP.java.bk src/main/java/com/dju/demo/HostIP.java
 
 docker build -t splitman2api .

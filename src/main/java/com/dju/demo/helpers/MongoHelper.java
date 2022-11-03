@@ -90,36 +90,6 @@ public class MongoHelper {
         return res;
     }
 
-    public List<Document> getAllDocs(final String colName, final boolean lastBatchOnly) {
-        List<Document> ress = new ArrayList<>();
-
-        // Accessing the database
-        MongoDatabase database = this._mongo.getDatabase(this._dbName);
-
-        // Retrieving a collection
-        MongoCollection<Document> collection = database.getCollection(colName);
-
-        final int newBatch = lastBatchOnly ? getLastBatch(collection) : -1;
-
-        // Getting the iterable object
-        FindIterable<Document> iterDoc = collection.find();
-        int i = 1;
-        // Getting the iterator
-        Iterator it = iterDoc.iterator();
-        while (it.hasNext()) {
-            Document d = (Document) it.next();
-            final int dBatch = d.containsKey("batch") ? Integer.parseInt(d.get("batch").toString()) : -1;
-
-//            System.out.println(d.toJson());
-            if (newBatch == -1 || newBatch == dBatch) {
-                ress.add(d);
-            }
-            i++;
-        }
-
-        return ress;
-    }
-
 //    public List<Document> getAllDocs(final String colName, final boolean lastBatchOnly) {
 //        List<Document> ress = new ArrayList<>();
 //
@@ -131,19 +101,49 @@ public class MongoHelper {
 //
 //        final int newBatch = lastBatchOnly ? getLastBatch(collection) : -1;
 //
-//        FindIterable<Document> iterDoc = newBatch == -1
-//                ? collection.find()
-//                : collection.find(eq("batch", newBatch));
-//
+//        // Getting the iterable object
+//        FindIterable<Document> iterDoc = collection.find();
+//        int i = 1;
 //        // Getting the iterator
 //        Iterator it = iterDoc.iterator();
 //        while (it.hasNext()) {
 //            Document d = (Document) it.next();
-//            ress.add(d);
+//            final int dBatch = d.containsKey("batch") ? Integer.parseInt(d.get("batch").toString()) : -1;
+//
+////            System.out.println(d.toJson());
+//            if (newBatch == -1 || newBatch == dBatch) {
+//                ress.add(d);
+//            }
+//            i++;
 //        }
 //
 //        return ress;
 //    }
+
+    public List<Document> getAllDocs(final String colName, final boolean lastBatchOnly) {
+        List<Document> ress = new ArrayList<>();
+
+        // Accessing the database
+        MongoDatabase database = this._mongo.getDatabase(this._dbName);
+
+        // Retrieving a collection
+        MongoCollection<Document> collection = database.getCollection(colName);
+
+        final int newBatch = lastBatchOnly ? getLastBatch(collection) : -1;
+
+        FindIterable<Document> iterDoc = newBatch == -1
+                ? collection.find()
+                : collection.find(eq("batch", newBatch));
+
+        // Getting the iterator
+        Iterator it = iterDoc.iterator();
+        while (it.hasNext()) {
+            Document d = (Document) it.next();
+            ress.add(d);
+        }
+
+        return ress;
+    }
 
     public boolean insertJson(final String colName, final String json) throws ParseException {
         // Accessing the database

@@ -698,6 +698,7 @@ public class SaveController {
             if (clearPass != null) {
                 final String md5Pass = ND5Helper.hash(clearPass);
                 objectToUpdateOrAdd.replace("password", md5Pass);
+                objectToUpdateOrAdd.remove("password1");
             }
 
             allObjects.add(objectToUpdateOrAdd);
@@ -705,7 +706,7 @@ public class SaveController {
         }
 
 //        Object[] myIds = ((JSONArray)user.get("invites")).stream().map(o1 -> ((JSONObject)o1).get("tripID")).toArray(Object[]::new);
-        JSONArray myInvites = (JSONArray)user.get("invites");
+        JSONArray myInvites = user.containsKey("invites") ? (JSONArray)user.get("invites") : new JSONArray();
 //        List<Object> myIds = myInvites.stream().map(o1 -> ((JSONObject)o1).get("tripID")).collect(Collectors.toList());
         List<String> myIds = (List<String>) myInvites.stream().map(o1 -> String.valueOf(((JSONObject)o1).get("tripID"))).distinct().collect(Collectors.toList());
 

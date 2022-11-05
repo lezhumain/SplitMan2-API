@@ -36,8 +36,8 @@ public class MongoHelper {
         this._dbName = dbName;
 
         // Creating Credentials
-        this._credential = MongoCredential.createCredential(username, this._dbName,
-                pass.toCharArray());
+//        this._credential = MongoCredential.createCredential(username, this._dbName,
+//                pass.toCharArray());
         System.out.println("Connected to the database successfully");
     }
 

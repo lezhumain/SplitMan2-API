@@ -526,8 +526,9 @@ public class SaveController {
     @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
     @PostMapping("/invite")
     public void invite(@CookieValue(COOKIE_NAME) String fooCookie, @RequestHeader Map<String, String> headers, @RequestBody String res, HttpServletResponse response) throws IOException, ParseException {
-        final int userID = this.checkUserID(fooCookie);
         response.addHeader("Access-Control-Allow-Credentials", "true");
+
+        final int userID = this.checkUserID(fooCookie);
 
         if(userID < 0) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -536,6 +537,11 @@ public class SaveController {
 
         final JSONArray arr = this.doInvite(userID, res);
 //        FileHelper.get_instance().writeFile(_dbFile, arr.toString());
+        if(arr == null) {
+            System.out.println("invite error: target - res");
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
         _service.addData(arr);
 
         // checking invite is present
@@ -573,6 +579,7 @@ public class SaveController {
 
     public JSONArray doInvite(int userID, String res, final String all) throws ParseException, IOException {
         if (userID < 0) {
+            System.out.println("REM -- No user ID specified");
             return null;
         }
 
@@ -591,6 +598,7 @@ public class SaveController {
                 .findFirst();
 
         if(!targetUser.isPresent()) {
+            System.out.println("REM -- Couldn't find target iser in DB");
             return null;
         }
 
@@ -602,6 +610,7 @@ public class SaveController {
                 .findFirst();
 
         if(existingInvite.isPresent()) {
+            System.out.println("REM -- invite already present");
             return null;
         }
 
@@ -612,6 +621,7 @@ public class SaveController {
         }).findFirst();
 
         if(!targetTrip.isPresent()) {
+            System.out.println("REM -- Couldn't find target trip");
             return null;
         }
 

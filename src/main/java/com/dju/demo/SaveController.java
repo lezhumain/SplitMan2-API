@@ -547,7 +547,9 @@ public class SaveController {
                         && (((JSONObject)o1).get("email")).equals(email))
                 .findFirst().orElse(null));
 
-        JSONArray invites = (JSONArray) targetUser.get("invites");
+//        JSONArray invites = (JSONArray) targetUser.get("invites");
+        JSONArray invites = targetUser.containsKey("invites") ? (JSONArray)targetUser.get("invites") : new JSONArray();
+
         final String testingTripID = String.valueOf(o.get("tripID"));
 
         final boolean testingHasTripID = (invites.stream().filter(o1 -> {
@@ -590,7 +592,9 @@ public class SaveController {
             return null;
         }
 
-        JSONArray invites = (JSONArray)targetUser.get().get("invites");
+//        JSONArray invites = (JSONArray)targetUser.get().get("invites");
+        JSONArray invites = targetUser.get().containsKey("invites") ? (JSONArray)targetUser.get().get("invites") : new JSONArray();
+
         Optional<JSONObject> existingInvite = invites.stream()
                 .filter(o1 -> intEquals(((JSONObject)o1).get("tripID"), tripID))
                 .findFirst();

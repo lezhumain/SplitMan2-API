@@ -592,18 +592,23 @@ public class SaveController {
 //        final String all = getAllObj();
         JSONArray arr = (JSONArray)jp.parse(all);
 
-        Optional<JSONObject> targetUser = arr.stream()
+        Optional<JSONObject> targetUserOp = arr.stream()
                 .filter(o1 -> ((JSONObject)o1).get("type").equals("user")
                         && (((JSONObject)o1).get("email")).equals(email))
                 .findFirst();
 
-        if(!targetUser.isPresent()) {
+        if(!targetUserOp.isPresent()) {
             System.out.println("REM -- Couldn't find target iser in DB");
             return null;
         }
 
+        JSONObject targetUser = targetUserOp.get();
+
 //        JSONArray invites = (JSONArray)targetUser.get().get("invites");
-        JSONArray invites = targetUser.get().containsKey("invites") ? (JSONArray)targetUser.get().get("invites") : new JSONArray();
+        if(!targetUser.containsKey("invites")) {
+            targetUser.put("invites", new JSONArray());
+        }
+        JSONArray invites = (JSONArray)targetUser.get("invites");
 
         Optional<JSONObject> existingInvite = invites.stream()
                 .filter(o1 -> intEquals(((JSONObject)o1).get("tripID"), tripID))

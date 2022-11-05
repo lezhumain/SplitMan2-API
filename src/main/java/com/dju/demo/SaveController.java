@@ -557,7 +557,9 @@ public class SaveController {
         }).findFirst().orElse(null)) != null;
 
         if(!testingHasTripID) {
-            System.out.println("invite error");
+            System.out.println("invite error: target - res");
+            System.out.println(targetUser.toJSONString());
+            System.out.println(arr.toJSONString());
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }

@@ -526,9 +526,8 @@ public class SaveController {
     @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
     @PostMapping("/invite")
     public void invite(@CookieValue(COOKIE_NAME) String fooCookie, @RequestHeader Map<String, String> headers, @RequestBody String res, HttpServletResponse response) throws IOException, ParseException {
-        response.addHeader("Access-Control-Allow-Credentials", "true");
-
         final int userID = this.checkUserID(fooCookie);
+        response.addHeader("Access-Control-Allow-Credentials", "true");
 
         if(userID < 0) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -563,9 +562,7 @@ public class SaveController {
         }).findFirst().orElse(null)) != null;
 
         if(!testingHasTripID) {
-            System.out.println("invite error: target - res");
-            System.out.println(targetUser.toJSONString());
-            System.out.println(arr.toJSONString());
+            System.out.println("invite error");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }

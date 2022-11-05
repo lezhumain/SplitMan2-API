@@ -536,6 +536,11 @@ public class SaveController {
 
         final JSONArray arr = this.doInvite(userID, res);
 //        FileHelper.get_instance().writeFile(_dbFile, arr.toString());
+        if(arr == null) {
+            System.out.println("invite error: target - res");
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return;
+        }
         _service.addData(arr);
 
         // checking invite is present
@@ -571,6 +576,7 @@ public class SaveController {
 
     public JSONArray doInvite(int userID, String res, final String all) throws ParseException, IOException {
         if (userID < 0) {
+            System.out.println("REM -- No user ID specified");
             return null;
         }
 
@@ -583,23 +589,30 @@ public class SaveController {
 //        final String all = getAllObj();
         JSONArray arr = (JSONArray)jp.parse(all);
 
-        Optional<JSONObject> targetUser = arr.stream()
+        Optional<JSONObject> targetUserOp = arr.stream()
                 .filter(o1 -> ((JSONObject)o1).get("type").equals("user")
                         && (((JSONObject)o1).get("email")).equals(email))
                 .findFirst();
 
-        if(!targetUser.isPresent()) {
+        if(!targetUserOp.isPresent()) {
+            System.out.println("REM -- Couldn't find target iser in DB");
             return null;
         }
 
+        JSONObject targetUser = targetUserOp.get();
+
 //        JSONArray invites = (JSONArray)targetUser.get().get("invites");
-        JSONArray invites = targetUser.get().containsKey("invites") ? (JSONArray)targetUser.get().get("invites") : new JSONArray();
+        if(!targetUser.containsKey("invites")) {
+            targetUser.put("invites", new JSONArray());
+        }
+        JSONArray invites = (JSONArray)targetUser.get("invites");
 
         Optional<JSONObject> existingInvite = invites.stream()
                 .filter(o1 -> intEquals(((JSONObject)o1).get("tripID"), tripID))
                 .findFirst();
 
         if(existingInvite.isPresent()) {
+            System.out.println("REM -- invite already present");
             return null;
         }
 
@@ -610,6 +623,7 @@ public class SaveController {
         }).findFirst();
 
         if(!targetTrip.isPresent()) {
+            System.out.println("REM -- Couldn't find target trip");
             return null;
         }
 

@@ -287,7 +287,11 @@ public class SaveController {
                 usToReturn = (new APIResult("login failed", null, true)).toJson();
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             }
+            else {
+                response.setStatus(HttpServletResponse.SC_OK);
+            }
 //            usToReturn = sessionRes.result.get("user") != null ? (JSONObject) sessionRes.result.get("user") : null;
+
         }
         else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -296,7 +300,6 @@ public class SaveController {
             usToReturn.remove("result");
         }
 
-        response.setStatus(HttpServletResponse.SC_OK);
         return usToReturn;
     }
 

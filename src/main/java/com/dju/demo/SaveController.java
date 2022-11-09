@@ -236,6 +236,9 @@ public class SaveController {
 
 
         APIResult sessionRes = doSessionLogin(pass, userName);
+//        if(sessionRes.hasError) {
+//            sessionRes.result = null;
+//        }
         final JSONObject us = sessionRes.toJson();
 
         JSONObject usToReturn = null;
@@ -286,6 +289,7 @@ public class SaveController {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             usToReturn = (JSONObject) us.clone();
             usToReturn.remove("user");
+            usToReturn.remove("result");
         }
 
         return usToReturn;
@@ -404,9 +408,9 @@ public class SaveController {
 
         // no
         if(targetUser == null) {
-            JSONObject r = new JSONObject();
-            r.put("data", all);
-            return new APIResult("Wrong pass or username.", r, true);
+//            JSONObject r = new JSONObject();
+//            r.put("data", all);
+            return new APIResult("Wrong pass or username.", null, true);
         }
 
 //        this._currentUser = targetUser;

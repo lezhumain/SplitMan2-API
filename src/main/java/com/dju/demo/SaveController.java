@@ -201,9 +201,13 @@ public class SaveController {
          response.addHeader("Access-Control-Allow-Credentials", "true");
 
         org.json.simple.parser.JSONParser jp = new JSONParser();
-        org.json.simple.JSONObject o = (org.json.simple.JSONObject)jp.parse(res);
-
-        response.setStatus(HttpServletResponse.SC_OK);
+        org.json.simple.JSONObject o;
+        try {
+            o = (JSONObject)jp.parse(res);
+        } catch (ParseException e) {
+            response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
+            return null;
+        }
 
         final String pass = (String) o.get("password"),
                 userName = (String) o.get("username");
@@ -292,6 +296,7 @@ public class SaveController {
             usToReturn.remove("result");
         }
 
+        response.setStatus(HttpServletResponse.SC_OK);
         return usToReturn;
     }
 
@@ -508,7 +513,7 @@ public class SaveController {
             response.addHeader("Access-Control-Allow-Credentials", "true");
         }
 
-        final JSONArray arr = this.updateStuff(-2, res);
+        final JSONArray arr = this.updateStuffSafe(-2, res);
         if (arr == null) {
             if (response != null) {
                 response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
@@ -535,7 +540,12 @@ public class SaveController {
             return;
         }
 
-        final JSONArray arr = this.updateStuff(userID, res);
+        final JSONArray arr = this.updateStuffSafe(userID, res);
+        if(arr == null) {
+            response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
+            return;
+        }
+
         _service.addData(arr);
 
         response.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -653,6 +663,18 @@ public class SaveController {
         invites.add(newInvite);
 
         return arr;
+    }
+
+    public JSONArray updateStuffSafe(int usserID, String res) throws IOException, ParseException, NoSuchAlgorithmException {
+        // TODO get userID
+        final String all = getAllObj();
+////        org.json.simple.parser.JSONParser jp = new JSONParser();
+        try {
+            return this.updateStuff(usserID, res, all);
+        } catch (Exception e) {
+            System.out.println("Parse exception on update, returning \"null\"");
+            return null;
+        }
     }
 
     public JSONArray updateStuff(int usserID, String res) throws IOException, ParseException, NoSuchAlgorithmException {

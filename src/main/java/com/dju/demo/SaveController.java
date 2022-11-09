@@ -13,7 +13,6 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.http.MediaType;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,6 +22,8 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.dju.demo.HostIP.HOST_IP;
@@ -235,7 +236,9 @@ public class SaveController {
 
 
         APIResult sessionRes = doSessionLogin(pass, userName);
-        JSONObject us = sessionRes.toJson();
+        final JSONObject us = sessionRes.toJson();
+
+        JSONObject usToReturn = null;
 
         if(!sessionRes.hasError) {
             response.setStatus(HttpServletResponse.SC_OK);
@@ -268,19 +271,24 @@ public class SaveController {
 
             response.addCookie(cook);
 
-            us = sessionRes.result.get("user") != null ? (JSONObject) sessionRes.result.get("user") : null;
-//            this._currentUser = null;
+            JSONObject target = sessionRes.result.containsKey("user") && sessionRes.result.get("user") != null
+                    ? (JSONObject) sessionRes.result.get("user")
+                    : null;
 
-//        return us;
-
-//        APIResult sessionRes = new APIResult("HI", null, true);
+            usToReturn = target;
+            if(target == null) {
+                usToReturn = (new APIResult("login failed", null, true)).toJson();
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            }
+//            usToReturn = sessionRes.result.get("user") != null ? (JSONObject) sessionRes.result.get("user") : null;
         }
         else {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            us.remove("user");
+            usToReturn = (JSONObject) us.clone();
+            usToReturn.remove("user");
         }
 
-        return us;
+        return usToReturn;
     }
 
     private JSONArray getAllSessions() throws IOException, ParseException {
@@ -497,6 +505,12 @@ public class SaveController {
         }
 
         final JSONArray arr = this.updateStuff(-2, res);
+        if (arr == null) {
+            if (response != null) {
+                response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
+            }
+            return;
+        }
 //        final JSONArray arr = this.updateStuff(-2, "{}");
         _service.addData(arr);
 
@@ -664,6 +678,11 @@ public class SaveController {
             }
 
             // adding a user
+            if(!objectToUpdateOrAdd.containsKey("username") || !objectToUpdateOrAdd.containsKey("password")
+                    || this.hasSpecialChars((String)objectToUpdateOrAdd.get("username"))
+                    || this.hasSpecialChars((String)objectToUpdateOrAdd.get("password"))) {
+                return null;
+            }
 
 //            final int userID = (int)Integer.parseInt(objectToUpdateOrAdd.get("id").toString());
             final String userEmail = (String)objectToUpdateOrAdd.get("email");
@@ -774,6 +793,14 @@ public class SaveController {
         allObjects.add(objectToUpdateOrAdd);
 
         return allObjects;
+    }
+
+    private boolean hasSpecialChars(String data) {
+        Pattern pattern = Pattern.compile("[^\\dA-Za-z ]", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(data);
+        boolean matchFound = matcher.find();
+
+        return matchFound;
     }
 
     private static JSONObject getUserFromAll(final String jsonStr, final int usserID) throws ParseException {

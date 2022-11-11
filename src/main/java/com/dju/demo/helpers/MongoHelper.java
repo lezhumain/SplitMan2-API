@@ -1,19 +1,15 @@
 package com.dju.demo.helpers;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoException;
 import com.mongodb.client.*;
-import com.mongodb.client.model.ReplaceOptions;
-import com.mongodb.client.result.UpdateResult;
+import com.mongodb.client.result.DeleteResult;
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import javax.print.Doc;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -129,7 +125,8 @@ public class MongoHelper {
         // Retrieving a collection
         MongoCollection<Document> collection = database.getCollection(colName);
 
-        final int newBatch = lastBatchOnly ? getLastBatch(collection) : -1;
+//        final int newBatch = lastBatchOnly ? getLastBatch(collection) : -1;
+        final int newBatch = -1;
 
         FindIterable<Document> iterDoc = newBatch == -1
                 ? collection.find()
@@ -145,6 +142,13 @@ public class MongoHelper {
         return ress;
     }
 
+    /**
+     * Inserts multiple documents from JSON string. Will remove any existing `_id` key
+     * @param colName collection name
+     * @param json json data to insert
+     * @return
+     * @throws ParseException
+     */
     public boolean insertJson(final String colName, final String json) throws ParseException {
         // Accessing the database
         MongoDatabase database = this._mongo.getDatabase(this._dbName);
@@ -156,14 +160,14 @@ public class MongoHelper {
         // Retrieving a collection
         MongoCollection<Document> collection = database.getCollection(colName);
 
-        final int newBatch = this.getLastBatch(collection) + 1;
+//        final int newBatch = this.getLastBatch(collection) + 1;
         for (Document toAdd: docsToAdd) {
-            if(toAdd.containsKey("batch")) {
-                toAdd.replace("batch", newBatch);
-            }
-            else {
-                toAdd.put("batch", newBatch);
-            }
+//            if(toAdd.containsKey("batch")) {
+//                toAdd.replace("batch", newBatch);
+//            }
+//            else {
+//                toAdd.put("batch", newBatch);
+//            }
             toAdd.remove("_id");
         }
 
@@ -177,6 +181,62 @@ public class MongoHelper {
         }
     }
 
+    public boolean upsertJson(final String colName, final String json) throws ParseException {
+        // Accessing the database
+        MongoDatabase database = this._mongo.getDatabase(this._dbName);
+
+        List<Document> docsToAdd = json.startsWith("{")
+                ? Arrays.asList(Document.parse(json))
+                : this.parseList(json);
+
+        // Retrieving a collection
+        MongoCollection<Document> collection = database.getCollection(colName);
+
+        Document target = docsToAdd.stream()
+                .filter(document -> document.containsKey("updating") && document.get("updating").equals(true))
+                .findFirst().orElse(null);
+
+        if(target == null) {
+            System.out.println("Couldn't find 'updating' key in objects.");
+            return false;
+        }
+
+        Document query = new Document()
+                .append("_id",  target.get("_id"))
+                .append("type",  target.get("type"));
+
+        try {
+            target.remove("updating");
+            DeleteResult dres = collection.deleteOne(query);
+            if (dres.getDeletedCount() == 1) {
+                collection.insertOne(target);
+            }
+            else {
+                return false;
+            }
+
+            return true;
+        } catch (Exception me) {
+            System.err.println("Unable to insert due to an error: " + me);
+            return false;
+        }
+    }
+
+    private void backUp(MongoCollection<Document> collection, final String colName) {
+        List<Document> allDocs = this.getAllDocs(colName, true);
+
+        final long unixTime = System.currentTimeMillis();
+        final long batch = (unixTime - Long.parseLong("1668131145132")) / 1000; // nb seconds since that time
+//        final long batch = (unixTime - Long.parseLong("1668131145132")) / 1000; // nb seconds since that time
+
+        for(Document doc: allDocs) {
+            doc.remove("_id");
+            doc.put("batch", batch);
+        }
+
+        this.insertData("archive", Utils.listToJson(allDocs));
+    }
+
     private List<Document> parseList(String json) throws ParseException {
         JSONParser jp = new JSONParser();
         JSONArray o = (org.json.simple.JSONArray)jp.parse(json);
@@ -188,6 +248,16 @@ public class MongoHelper {
     public boolean insertData(String collectionName, String json) {
         try {
             return insertJson(collectionName, json);
+        } catch (ParseException e) {
+            System.out.println("Error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean upsertData(String collectionName, String json) {
+        try {
+            this.backUp(null, collectionName);
+            return upsertJson(collectionName, json);
         } catch (ParseException e) {
             System.out.println("Error: " + e.getMessage());
             return false;

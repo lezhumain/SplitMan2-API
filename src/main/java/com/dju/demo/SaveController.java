@@ -819,6 +819,7 @@ public class SaveController {
             ((JSONArray)allObjects).remove(targetIndex) ;
         }
 
+        objectToUpdateOrAdd.put("updating", true);
         allObjects.add(objectToUpdateOrAdd);
 
         return allObjects;

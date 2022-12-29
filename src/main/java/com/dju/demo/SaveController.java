@@ -45,7 +45,7 @@ public class SaveController {
 
     public static Class aClass = MongodbService.class;
 
-    private final IDataService _service;
+    protected final IDataService _service;
 //    private final IDataService _service = new MongodbService();
 //    private final IDataService _service = new SQLLiteService();
 //    private final IDataService _service = new FileService();
@@ -494,7 +494,7 @@ public class SaveController {
         }
     }
 
-    private int checkUserID(final String fooCookie) {
+    protected int checkUserID(final String fooCookie) {
         int userID = -2;
         try {
             final JSONObject user = checkUser(fooCookie);

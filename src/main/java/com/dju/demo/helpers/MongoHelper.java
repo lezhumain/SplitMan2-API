@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Sorts.descending;
 
 public class MongoHelper {
     private final String _dbName;
@@ -189,6 +190,13 @@ public class MongoHelper {
                 ? Arrays.asList(Document.parse(json))
                 : this.parseList(json);
 
+        // TODO add 'updating' key here?
+//        for(Document d: docsToAdd) {
+//            if(!d.containsKey("updating")) {
+//                d.put("updating", true);
+//            }
+//        }
+
         // Retrieving a collection
         MongoCollection<Document> collection = database.getCollection(colName);
 
@@ -201,6 +209,15 @@ public class MongoHelper {
             return false;
         }
 
+        if(Integer.parseInt(target.get("id").toString()) == 0) {
+            // get last id
+            final Document doc = collection.find().sort(descending("id")).first();
+            final int lastID = Integer.parseInt(doc.get("id").toString());
+
+            // set id + 1
+            target.replace("id", lastID + 1);
+        }
+
         Document query = new Document()
                 .append("_id",  target.get("_id"))
                 .append("type",  target.get("type"));
@@ -209,12 +226,13 @@ public class MongoHelper {
             target.remove("updating");
             DeleteResult dres = collection.deleteOne(query);
             if (dres.getDeletedCount() == 1) {
-                collection.insertOne(target);
+                System.err.println("Updating item.");
             }
             else {
-                return false;
+                System.err.println("Inserting item.");
             }
 
+            collection.insertOne(target);
             return true;
         } catch (Exception me) {
             System.err.println("Unable to insert due to an error: " + me);
@@ -234,7 +252,11 @@ public class MongoHelper {
             doc.put("batch", batch);
         }
 
-        this.insertData("archive", Utils.listToJson(allDocs));
+        if(allDocs.size() == 0) {
+            return;
+        }
+
+        this.insertData("archive", SplitManUtils.listToJson(allDocs));
     }
 
     private List<Document> parseList(String json) throws ParseException {

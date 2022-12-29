@@ -209,7 +209,8 @@ public class MongoHelper {
             return false;
         }
 
-        if(Integer.parseInt(target.get("id").toString()) == 0) {
+//        if(Integer.parseInt(target.get("id").toString()) == 0) {
+        if(!target.containsKey("_id")) {
             // get last id
             final Document doc = collection.find().sort(descending("id")).first();
             final int lastID = Integer.parseInt(doc.get("id").toString());

@@ -25,27 +25,29 @@ public class Main {
 //        }
 
         //Create the observable
-        Single<String> testSingle = Single.just("Hello World");
+//        Single<String> testSingle = Single.just("Hello World");
+//
+//        //Create an observer
+//        Disposable disposable = testSingle
+//                .delay(2, TimeUnit.SECONDS, Schedulers.io())
+//                .subscribeWith(
+//                        new DisposableSingleObserver<String>() {
+//
+//                            @Override
+//                            public void onError(Throwable e) {
+//                                e.printStackTrace();
+//                            }
+//
+//                            @Override
+//                            public void onSuccess(String value) {
+//                                System.out.println(value);
+//                            }
+//                        });
+//        Thread.sleep(3000);
+//        //start observing
+//        disposable.dispose();
+//        System.out.println("After ?");
 
-        //Create an observer
-        Disposable disposable = testSingle
-                .delay(2, TimeUnit.SECONDS, Schedulers.io())
-                .subscribeWith(
-                        new DisposableSingleObserver<String>() {
-
-                            @Override
-                            public void onError(Throwable e) {
-                                e.printStackTrace();
-                            }
-
-                            @Override
-                            public void onSuccess(String value) {
-                                System.out.println(value);
-                            }
-                        });
-        Thread.sleep(3000);
-        //start observing
-        disposable.dispose();
-        System.out.println("After ?");
+        System.out.println("");
     }
 }

@@ -220,7 +220,7 @@ public class MongoHelper {
         }
 
         Document query = new Document()
-                .append("_id",  target.get("_id"))
+                .append("id",  target.get("id"))
                 .append("type",  target.get("type"));
 
         try {

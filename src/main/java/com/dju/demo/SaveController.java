@@ -118,6 +118,8 @@ public class SaveController {
     public String getAll(@RequestHeader Map<String, String> headers, @CookieValue(COOKIE_NAME) String fooCookie, HttpServletResponse response) {
         response.addHeader("Access-Control-Allow-Credentials", "true");
         try {
+//            final String fooCookie = getCookieFromHeaders(headers); // in case local CORS errors
+
             final String res = removeAllPasswords(getAllObj()); // TODO put at the end ?
 
             JSONArray allSessions = getAllSessions();
@@ -139,6 +141,12 @@ public class SaveController {
             response.setStatus(500);
             return String.format("{\"error\"}: \"%s\"", e.getMessage());
         }
+    }
+
+    private String getCookieFromHeaders(Map<String, String> headers) {
+        final String cookie = headers.containsKey("cookie") ? headers.get("cookie") : null;
+        System.out.println("Cookie: " + cookie);
+        return cookie.replace("Spliman_Session=", "");
     }
 
     private String removeAllPasswords(String allObj) throws ParseException {
@@ -533,25 +541,43 @@ public class SaveController {
 
     @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
     @PostMapping("/saveOne")
-    public void saveOne(@CookieValue(COOKIE_NAME) String fooCookie, @RequestHeader Map<String, String> headers, @RequestBody String res, HttpServletResponse response) throws IOException, ParseException, NoSuchAlgorithmException
+    public JSONObject saveOne(@CookieValue(COOKIE_NAME) String fooCookie, @RequestHeader Map<String, String> headers, @RequestBody String res, HttpServletResponse response) throws IOException, ParseException, NoSuchAlgorithmException
+//    public JSONObject saveOne(@RequestHeader Map<String, String> headers, @RequestBody String res, HttpServletResponse response) throws IOException, ParseException, NoSuchAlgorithmException
     {
         response.addHeader("Access-Control-Allow-Credentials", "true");
+//        final String fooCookie = getCookieFromHeaders(headers);
         final int userID = this.checkUserID(fooCookie);
+//        final int userID = 1;
 
         if(userID < 0) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
+            return new JSONObject();
         }
 
         final JSONArray arr = this.updateStuffSafe(userID, res);
         if(arr == null) {
             response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
-            return;
+            return new JSONObject();
         }
 
-        _service.addData(arr);
+        final String obj = handleRes(_service.addData(arr));
 
-        response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/json");
+        System.out.println("HTTP returning " + obj);
+
+        // TODO handle parse errors
+		final org.json.simple.parser.JSONParser jp = new JSONParser();
+		final JSONObject o = obj == null
+            ? null
+            : (org.json.simple.JSONObject)jp.parse(obj);
+
+        return o;
+    }
+
+    private String handleRes(final String addData) {
+        // TODO handle this in service
+        return addData.equals("") ? "{}" : addData;
     }
 
     @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})

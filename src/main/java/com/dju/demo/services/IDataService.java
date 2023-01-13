@@ -6,5 +6,5 @@ import org.json.simple.parser.ParseException;
 public interface IDataService {
     public JSONArray getData() throws ParseException;
     public String getStringData();
-    public boolean addData(JSONArray data);
+    public String addData(JSONArray data);
 }

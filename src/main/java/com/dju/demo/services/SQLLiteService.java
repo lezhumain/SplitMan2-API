@@ -33,13 +33,13 @@ public class SQLLiteService extends ADataService {
     }
 
     @Override
-    public boolean addData(JSONArray data) {
+    public String addData(JSONArray data) {
         final String json = data.toString();
         try {
-            return _helper.insertData(String.format("INSERT INTO SPLITMAN (VALUE) VALUES ('%s')", json));
+            return _helper.insertData(String.format("INSERT INTO SPLITMAN (VALUE) VALUES ('%s')", json)) ? "" : null;
         } catch (InterruptedException e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
     }
 }

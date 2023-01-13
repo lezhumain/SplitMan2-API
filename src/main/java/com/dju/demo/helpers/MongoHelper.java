@@ -10,6 +10,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -182,7 +183,7 @@ public class MongoHelper {
         }
     }
 
-    public boolean upsertJson(final String colName, final String json) throws ParseException {
+    public String upsertJson(final String colName, final String json) throws ParseException {
         // Accessing the database
         MongoDatabase database = this._mongo.getDatabase(this._dbName);
 
@@ -206,7 +207,7 @@ public class MongoHelper {
 
         if(target == null) {
             System.out.println("Couldn't find 'updating' key in objects.");
-            return false;
+            return null;
         }
 
 //        if(Integer.parseInt(target.get("id").toString()) == 0) {
@@ -219,25 +220,97 @@ public class MongoHelper {
             target.replace("id", lastID + 1);
         }
 
+//        Document query = new Document()
+//                .append("id",  Integer.parseInt(target.get("id").toString()))
+//                .append("type",  target.get("type"))
+//                .append("_rev",  target.get("_rev"))
+//                .append("_id",  target.get("_id"));
         Document query = new Document()
-                .append("id",  target.get("id"))
-                .append("type",  target.get("type"));
+                .append("_rev",  target.get("_rev"))
+                .append("_id",  target.get("_id"));
+
+//        System.out.println("Trying to delete: " + query.toJson());
 
         try {
             target.remove("updating");
+//            System.out.println("deleting " + ((Document)target.get("_id")).getString("$oid") + " - " + target.get("_rev") + " - " + target.getString("id"));
+            System.out.println("deleting " + query.toJson());
             DeleteResult dres = collection.deleteOne(query);
-            if (dres.getDeletedCount() == 1) {
+
+            final long dewleteCoujnt = dres.getDeletedCount();
+            System.err.println("Deleted: " + dewleteCoujnt);
+
+            if (dewleteCoujnt == 1) {
                 System.err.println("Updating item.");
             }
             else {
                 System.err.println("Inserting item.");
             }
 
+            MongoHelper.updateRev(target);
+            System.out.println("New rev: " + target.getString("_rev"));
             collection.insertOne(target);
-            return true;
+
+            if(!target.containsKey("_id")) {
+                System.out.println("Searching target after insertion...");
+                final Document found = this.findByMongoID(collection, target);
+
+                if (found == null) {
+                    System.out.println("No target found.");
+                    return "";
+                }
+                else {
+                    System.out.println("Found " + found.toJson());
+                    target.put("_id", found.get("_id"));
+                }
+            }
+
+//            final String res = target.get("_id").toString();
+//            final org.bson.types.ObjectId resD = (org.bson.types.ObjectId)target.get("_id");
+//
+//            System.out.println("Returning " + res);
+//            System.out.println("maybe " + resD.toString());
+
+            if(target.containsKey("password")) {
+                target.replace("password", "");
+            }
+
+            return target.toJson();
         } catch (Exception me) {
             System.err.println("Unable to insert due to an error: " + me);
-            return false;
+            return null;
+        }
+    }
+
+    private Document findByMongoID(final MongoCollection<Document> collection, Document target) {
+        FindIterable<Document> foundDocs = collection.find (target);
+        Iterator it = foundDocs.iterator();
+//                System.out.println(String.format("Found %d targets", foundDocs.));
+        if (!it.hasNext()) {
+//            System.out.println("No target found.");
+            return null;
+        }
+
+        final Document found = (Document)it.next();
+        return found;
+    }
+
+    private static void updateRev(Document target) throws NoSuchAlgorithmException {
+        final boolean hasRev = target.containsKey("_rev");
+        final String currentRev = hasRev ? target.getString("_rev") : null;
+
+        System.out.println("currentRev: " + currentRev);
+
+        final String newRev = (currentRev == null ? "1" : String.valueOf(Integer.parseInt(currentRev.split("_")[0]) + 1))
+            + "_" + ND5Helper.hash(target.toJson()).toLowerCase();
+
+        System.out.println("newRev: " + newRev);
+
+        if(hasRev) {
+            target.replace("_rev", newRev);
+        }
+        else {
+            target.put("_rev", newRev);
         }
     }
 
@@ -277,13 +350,21 @@ public class MongoHelper {
         }
     }
 
-    public boolean upsertData(String collectionName, String json) {
+    public String upsertData(String collectionName, String json) {
         try {
             this.backUp(null, collectionName);
             return upsertJson(collectionName, json);
         } catch (ParseException e) {
             System.out.println("Error: " + e.getMessage());
-            return false;
+            return null;
         }
+    }
+
+    public void deleteAll(String collectionName) {
+        MongoDatabase database = this._mongo.getDatabase(this._dbName);
+
+        // Retrieving a collection
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        collection.deleteMany(Document.parse("{}"));
     }
 }

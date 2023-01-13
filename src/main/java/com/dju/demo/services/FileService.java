@@ -19,17 +19,17 @@ public class FileService extends ADataService {
     }
 
     @Override
-    public boolean addData(JSONArray data) {
+    public String addData(JSONArray data) {
         if(data == null) {
-            return false;
+            return null;
         }
 
         try {
             FileHelper.get_instance().writeFile(_dbFile, data.toString());
-            return true;
+            return "";
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
+            return null;
         }
     }
 }

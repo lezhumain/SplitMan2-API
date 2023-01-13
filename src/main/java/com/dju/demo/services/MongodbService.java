@@ -35,7 +35,7 @@ public class MongodbService extends ADataService {
     }
 
     @Override
-    public boolean addData(JSONArray data) {
+    public String addData(JSONArray data) {
         final String json = data.toString();
 //        return _helper.insertData(this._collectionName, json);
         return _helper.upsertData(this._collectionName, json);

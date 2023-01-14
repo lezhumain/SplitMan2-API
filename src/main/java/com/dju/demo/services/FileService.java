@@ -32,4 +32,17 @@ public class FileService extends ADataService {
             return null;
         }
     }
+
+    @Override
+    public int getItemCount() {
+        try {
+            final String data = this.doGetStringData();
+            final JSONParser jp = new JSONParser();
+            final JSONArray arr = (JSONArray)jp.parse(data);
+
+            return arr.size();
+        } catch (IOException | ParseException e) {
+            return -1;
+        }
+    }
 }

@@ -92,6 +92,12 @@ public class SaveController {
     }
 
     @CrossOrigin(origins = "*")
+    @GetMapping("/itemCount")
+    public String itemCount() {
+        return String.valueOf(this._service.getItemCount());
+    }
+
+    @CrossOrigin(origins = "*")
     @PostMapping(value = "/genimg", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
     public byte[] genimg(@RequestParam String fileName, @RequestParam String payload,
                          @RequestPart MultipartFile document, HttpServletResponse response) throws ParseException, IOException, InterruptedException {

@@ -2,6 +2,7 @@ package com.dju.demo.services;
 
 import com.dju.demo.helpers.SQLiteJDBC;
 import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.sqlite.SQLiteException;
 
@@ -40,6 +41,19 @@ public class SQLLiteService extends ADataService {
         } catch (InterruptedException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        try {
+            final String data = this.doGetStringData();
+            final JSONParser jp = new JSONParser();
+            final JSONArray arr = (JSONArray)jp.parse(data);
+
+            return arr.size();
+        } catch (ParseException | SQLiteException e) {
+            return -1;
         }
     }
 }

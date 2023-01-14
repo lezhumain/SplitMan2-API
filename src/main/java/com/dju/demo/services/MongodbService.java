@@ -40,4 +40,9 @@ public class MongodbService extends ADataService {
 //        return _helper.insertData(this._collectionName, json);
         return _helper.upsertData(this._collectionName, json);
     }
+
+    @Override
+    public int getItemCount() {
+        return _helper.getAllDocs("splitman", true).size();
+    }
 }

@@ -1,5 +1,6 @@
 package com.dju.demo.helpers;
 
+import com.dju.demo.Creds;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoException;
 import com.mongodb.client.*;
@@ -25,13 +26,24 @@ public class MongoHelper {
     private MongoClient _mongo;
     private MongoCredential _credential;
 
-    public MongoHelper(String host, int port, String username, String pass, String dbName) {
+    public MongoHelper(final String host, final int port, final String dbName) {
+        this._dbName = dbName;
+        final String username = Creds.mongo_user,
+                pass = Creds.mongo_pass;
+        this.init(host, port, username, pass);
+    }
+
+    public MongoHelper(final String host, final int port, final String username, final String pass, final String dbName) {
+        this._dbName = dbName;
+        this.init(host, port, username, pass);
+    }
+
+    private void init(String host, int port, String username, String pass) {
         final String theUrl = String.format("mongodb://%s:%s@%s", username, pass, host, port);
 
         // Creating a Mongo client
         this._mongo = MongoClients.create(theUrl);
 
-        this._dbName = dbName;
 
         // Creating Credentials
 //        this._credential = MongoCredential.createCredential(username, this._dbName,

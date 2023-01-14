@@ -29,7 +29,7 @@ class MongoTests {
     @Test
     void checkMongo() throws ParseException, IOException, NoSuchAlgorithmException {
         final String colName = "splitman";
-        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "", "", "mydb");
+        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "mydb");
         List<Document> getAllDocs = _helper.getAllDocs(colName, true);
         System.out.println("length: " + getAllDocs.size());
 
@@ -42,7 +42,7 @@ class MongoTests {
 //    @Test
 //    void getAll() throws ParseException, IOException, NoSuchAlgorithmException {
 //        final String colName = "splitman";
-//        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP , 27017, "", "", "mydb");
+//        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP , 27017, "mydb");
 //        List<Document> getAllDocs = _helper.getAllDocs(colName, true);
 //        System.out.println("length: " + getAllDocs.size());
 //    }
@@ -50,7 +50,7 @@ class MongoTests {
 //    @Test
 //    void checkRehister() throws IOException, ParseException, NoSuchAlgorithmException {
 //        final String colName = "splitman";
-//        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "", "", "mydb");
+//        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "mydb");
 //
 //        final List<Document> getAllDocs0 = _helper.getAllDocs(colName, true);
 //        System.out.println("length: " + getAllDocs0.size());
@@ -67,7 +67,7 @@ class MongoTests {
     @Test
     void getAll() throws ParseException, IOException, NoSuchAlgorithmException {
         final String colName = "splitman";
-        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "", "", "mydb");
+        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "mydb");
 //        List<Document> getAllDocs = new ArrayList<>();
         List<Document> getAllDocs = _helper.getAllDocs(colName, false);
 
@@ -88,7 +88,7 @@ class MongoTests {
     @Test
     void getAll_LastBatch() {
         final String colName = "splitman";
-        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "", "", "mydb");
+        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "mydb");
         List<Document> getAllDocs = _helper.getAllDocs(colName, false);
 
         List<Document> lastDpcs = _helper.getAllDocs(colName, true);
@@ -102,7 +102,7 @@ class MongoTests {
     @Test
     List<Document> checkRehister() throws IOException, ParseException, NoSuchAlgorithmException {
         final String colName = "splitman";
-        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "", "", "mydb");
+        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "mydb");
 
         final List<Document> getAllDocs0 = _helper.getAllDocs(colName, true);
         System.out.println("length: " + getAllDocs0.size());
@@ -127,7 +127,7 @@ class MongoTests {
     @Test
     void checkRehisterSpecialChars() throws IOException, ParseException, NoSuchAlgorithmException {
         final String colName = "splitman";
-        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "", "", "mydb");
+        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "mydb");
 
         final List<Document> getAllDocs0 = _helper.getAllDocs(colName, true);
         System.out.println("length: " + getAllDocs0.size());
@@ -374,7 +374,7 @@ class MongoTests {
     void removeCollection() {
 //        final SaveControllerMock sc = new SaveControllerMock(this._userID > -1 ? this._userID : 2);
 //        final MongodbService serv = (MongodbService)sc.get_service();
-        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "", "", "mydb");
+        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "mydb");
         _helper.deleteAll("splitman");
     }
 }

@@ -5,7 +5,7 @@ public class HostIP {
      * The HOST to authorize in CORS headers
      */
     public static final String HOST_IP = "PROD_IP";
-    public static final String MONGO_IP = "127.0.0.1";
+    public static final String MONGO_IP = "mongodb";
 
 //    public static String getIp() {
 //        return HOST_IP.contains("//")

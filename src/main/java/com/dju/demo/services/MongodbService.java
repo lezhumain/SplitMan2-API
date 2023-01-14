@@ -8,7 +8,7 @@ import org.sqlite.SQLiteException;
 public class MongodbService extends ADataService {
     private final String _collectionName = "splitman";
 //    private MongodbHelper _helper0 = new MongodbHelper();
-    private MongoHelper _helper = new MongoHelper(HostIP.getIp() , 27017, "AzureDiamond", "hunter2", "mydb");
+    private MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP , 27017, "", "", "mydb");
 
     public MongodbService() {
         super();

@@ -27,7 +27,7 @@ class MongoBackupTests {
     }
 
     private void doGetAll(final String colName, final String fileName) throws ParseException, IOException {
-        MongoHelper _helper = new MongoHelper(HostIP.getIp(), 27017, "AzureDiamond", "hunter2", "mydb");
+        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "", "", "mydb");
         List<Document> getAllDocs = _helper.getAllDocs(colName, false);
 
         final JSONParser jp = new JSONParser();

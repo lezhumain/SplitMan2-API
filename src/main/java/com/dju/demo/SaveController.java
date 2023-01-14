@@ -609,7 +609,6 @@ public class SaveController {
                         && (((JSONObject)o1).get("email")).equals(email))
                 .findFirst().orElse(null));
 
-//        JSONArray invites = (JSONArray) targetUser.get("invites");
         JSONArray invites = targetUser.containsKey("invites") ? (JSONArray)targetUser.get("invites") : new JSONArray();
 
         final String testingTripID = String.valueOf(o.get("tripID"));
@@ -690,6 +689,10 @@ public class SaveController {
         newInvite.put("tripName", targetTrip.get().get("name"));
 
         invites.add(newInvite);
+
+        if(!targetUser.containsKey("updating")) {
+            targetUser.put("updating", true);
+        }
 
         return arr;
     }

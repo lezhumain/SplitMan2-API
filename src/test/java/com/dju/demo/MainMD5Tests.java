@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.security.NoSuchAlgorithmException;
 
 @SpringBootTest
-class MD5Tests {
+class MainMD5Tests {
 	@Test
 	public void givenPassword_whenHashing_thenVerifying() throws NoSuchAlgorithmException {
 		String hash = "6C902F88D0BAE318AAB5F03B9AF5B9C1";

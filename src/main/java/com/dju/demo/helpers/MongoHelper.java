@@ -219,6 +219,7 @@ public class MongoHelper {
 
         if(target == null) {
             System.out.println("Couldn't find 'updating' key in objects.");
+            System.out.println(json);
             return null;
         }
 

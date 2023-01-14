@@ -1,16 +1,13 @@
 package com.dju.demo;
 
-import com.dju.demo.services.FileService;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class E2ETests {
+class MainE2ETests {
 
 	private static String _db = "[]";
 
@@ -34,7 +31,7 @@ class E2ETests {
 		"  \"username\": \"a\",\n" +
 		"  \"password\": \"a\",\n" +
 		"  \"invites\": []\n" +
-		"}", E2ETests._db);
+		"}", MainE2ETests._db);
 
 		Assert.assertNotNull(res1);
 
@@ -44,7 +41,7 @@ class E2ETests {
 		final boolean containedb = res1.stream().filter(o1 -> ((JSONObject) o1).get("username").toString().equals("a")).findFirst().isPresent();
 		Assert.assertTrue(containedb);
 
-		E2ETests._db = res1.toString();
+		MainE2ETests._db = res1.toString();
 	}
 
 	/**
@@ -67,7 +64,7 @@ class E2ETests {
 				"  \"username\": \"s\",\n" +
 				"  \"password\": \"s\",\n" +
 				"  \"invites\": []\n" +
-				"}", E2ETests._db);
+				"}", MainE2ETests._db);
 
 		Assert.assertNotNull(res1);
 
@@ -79,7 +76,7 @@ class E2ETests {
 
 		Assert.assertEquals(res1.size(), 2);
 
-		E2ETests._db = res1.toString();
+		MainE2ETests._db = res1.toString();
 	}
 
 //	/**

@@ -19,17 +19,30 @@ public class FileService extends ADataService {
     }
 
     @Override
-    public boolean addData(JSONArray data) {
+    public String addData(JSONArray data) {
         if(data == null) {
-            return false;
+            return null;
         }
 
         try {
             FileHelper.get_instance().writeFile(_dbFile, data.toString());
-            return true;
+            return "";
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
+            return null;
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        try {
+            final String data = this.doGetStringData();
+            final JSONParser jp = new JSONParser();
+            final JSONArray arr = (JSONArray)jp.parse(data);
+
+            return arr.size();
+        } catch (IOException | ParseException e) {
+            return -1;
         }
     }
 }

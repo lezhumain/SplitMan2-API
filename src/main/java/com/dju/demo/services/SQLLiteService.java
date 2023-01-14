@@ -2,6 +2,7 @@ package com.dju.demo.services;
 
 import com.dju.demo.helpers.SQLiteJDBC;
 import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.sqlite.SQLiteException;
 
@@ -33,13 +34,26 @@ public class SQLLiteService extends ADataService {
     }
 
     @Override
-    public boolean addData(JSONArray data) {
+    public String addData(JSONArray data) {
         final String json = data.toString();
         try {
-            return _helper.insertData(String.format("INSERT INTO SPLITMAN (VALUE) VALUES ('%s')", json));
+            return _helper.insertData(String.format("INSERT INTO SPLITMAN (VALUE) VALUES ('%s')", json)) ? "" : null;
         } catch (InterruptedException e) {
             e.printStackTrace();
-            return false;
+            return null;
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        try {
+            final String data = this.doGetStringData();
+            final JSONParser jp = new JSONParser();
+            final JSONArray arr = (JSONArray)jp.parse(data);
+
+            return arr.size();
+        } catch (ParseException | SQLiteException e) {
+            return -1;
         }
     }
 }

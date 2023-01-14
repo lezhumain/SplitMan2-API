@@ -2,15 +2,13 @@ package com.dju.demo.services;
 
 import com.dju.demo.HostIP;
 import com.dju.demo.helpers.MongoHelper;
-import com.dju.demo.helpers.MongodbHelper;
-import com.dju.demo.helpers.SQLiteJDBC;
 import org.json.simple.JSONArray;
 import org.sqlite.SQLiteException;
 
 public class MongodbService extends ADataService {
     private final String _collectionName = "splitman";
 //    private MongodbHelper _helper0 = new MongodbHelper();
-    private MongoHelper _helper = new MongoHelper(HostIP.getIp() , 27017, "AzureDiamond", "hunter2", "mydb");
+    private MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP , 27017, "mydb");
 
     public MongodbService() {
         super();
@@ -25,8 +23,8 @@ public class MongodbService extends ADataService {
 
     private String selectData() throws SQLiteException {
         String data = null;
-//        data = _helper.selectData(this._collectionName);
-        data = _helper.selectData(this._collectionName, true);
+        data = _helper.selectData(this._collectionName, false);
+//        data = _helper.selectData(this._collectionName, true);
         return data;
     }
 
@@ -37,13 +35,14 @@ public class MongodbService extends ADataService {
     }
 
     @Override
-    public boolean addData(JSONArray data) {
+    public String addData(JSONArray data) {
         final String json = data.toString();
-//        try {
-            return _helper.insertData(this._collectionName, json);
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//            return false;
-//        }
+//        return _helper.insertData(this._collectionName, json);
+        return _helper.upsertData(this._collectionName, json);
+    }
+
+    @Override
+    public int getItemCount() {
+        return _helper.getAllDocs("splitman", true).size();
     }
 }

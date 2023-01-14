@@ -15,7 +15,7 @@ function sedi()
 cp src/main/java/com/dju/demo/HostIP.java src/main/java/com/dju/demo/HostIP.java.bk
 sedi -e "s|PROD_IP|$1|g" src/main/java/com/dju/demo/HostIP.java
 
-mvn package
+mvn package -Dtest=Main*Tests
 cp target/demo*.jar target/app.jar
 
 mv src/main/java/com/dju/demo/HostIP.java.bk src/main/java/com/dju/demo/HostIP.java

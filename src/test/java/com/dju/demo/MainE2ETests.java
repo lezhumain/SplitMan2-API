@@ -1,5 +1,6 @@
 package com.dju.demo;
 
+import com.dju.demo.services.FileService;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.junit.Assert;
@@ -8,6 +9,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 class MainE2ETests {
+
+
+	private final SaveController sc;
+
+	public MainE2ETests() {
+		System.out.println("");
+		SaveController.aClass = FileService.class;
+		sc = new SaveController();
+	}
 
 	private static String _db = "[]";
 
@@ -20,7 +30,7 @@ class MainE2ETests {
 //		org.json.simple.parser.JSONParser jp = new JSONParser();
 //		JSONArray o = (org.json.simple.JSONArray)jp.parse("[]");
 
-		SaveController sc = new SaveController();
+
 
 		final int userIdData = -2;
 
@@ -53,7 +63,7 @@ class MainE2ETests {
 //		org.json.simple.parser.JSONParser jp = new JSONParser();
 //		JSONArray o = (org.json.simple.JSONArray)jp.parse("[]");
 
-		SaveController sc = new SaveController();
+
 
 		final int userIdData = -2;
 
@@ -88,7 +98,7 @@ class MainE2ETests {
 ////		org.json.simple.parser.JSONParser jp = new JSONParser();
 ////		JSONArray o = (org.json.simple.JSONArray)jp.parse("[]");
 //
-//		SaveController sc = new SaveController();
+//
 //
 //		final int travelID = 1;
 //
@@ -140,7 +150,7 @@ class MainE2ETests {
 ////		org.json.simple.parser.JSONParser jp = new JSONParser();
 ////		JSONArray o = (org.json.simple.JSONArray)jp.parse("[]");
 //
-//		SaveController sc = new SaveController();
+//
 //
 //		final int travelID = 1;
 //

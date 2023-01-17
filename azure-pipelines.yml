@@ -23,6 +23,7 @@ stages:
     jobs:
       - job: Deploy_Docker_Containers
         steps:
+          - checkout: self
           - checkout: MyGitHub_splitman2run
 
           - task: DownloadSecureFile@1

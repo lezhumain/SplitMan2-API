@@ -6,16 +6,25 @@
 pr:
   branches:
     include:
-    - '*'  # must quote since "*" is a YAML reserved character; we want a string
+      - '*'  # must quote since "*" is a YAML reserved character; we want a string
 
 pool:
   vmImage: ubuntu-latest
+
+resources:
+  repositories:
+    - repository: MyGitHub_splitman2run # The name used to reference this repository in the checkout step
+      type: github
+      endpoint: lezhumain
+      name: lezhumain/SplitMan2-run
 
 stages:
   - stage: Deploy
     jobs:
       - job: Deploy_Docker_Containers
         steps:
+          - checkout: MyGitHub_splitman2run
+
           - task: DownloadSecureFile@1
             name: sshKey
             displayName: 'Download SSH key'
@@ -61,19 +70,19 @@ stages:
             displayName: 'Setup SSH access'
 
           - script: |
-              chmod +x .github/actions/remote/*.sh
-              chmod +x .github/actions/*.sh
+              chmod +x SplitMan2-run/*.sh
+              chmod +x SplitMan2-run/*.sh
               ls -al "$HOME/.ssh"
               cat "$HOME/.ssh/config"
-              bash .github/actions/remote/backup_current.sh
+              bash SplitMan2-run/backup_current.sh
             env:
               DEBIAN_PATH: $(DEBIAN_PATH)
             displayName: 'Backup current'
 
           - script: |
-              #chmod +x .github/actions/remote/*.sh
-              #chmod +x .github/actions/*.sh
-              bash .github/actions/remote/build_containers.sh "SplitMan2-API"
+              #chmod +x SplitMan2-run/*.sh
+              #chmod +x SplitMan2-run/*.sh
+              bash SplitMan2-run/build_containers.sh "SplitMan2-API"
             env:
               DEBIAN_PATH: $(DEBIAN_PATH)
               DEBIAN_IP: $(DEBIAN_IP)
@@ -82,13 +91,13 @@ stages:
             displayName: 'Build containers'
 
           - script: |
-              bash .github/actions/remote/run_containers.sh
+              bash SplitMan2-run/run_containers.sh
             env:
               DEBIAN_PATH: $(DEBIAN_PATH)
             displayName: 'Run containers'
 
           - script: |
-              bash .github/actions/remote/setup_db.sh
+              bash SplitMan2-run/setup_db.sh
             env:
               DEBIAN_IP: $(DEBIAN_IP)
               DEBIAN_PATH: $(DEBIAN_PATH)

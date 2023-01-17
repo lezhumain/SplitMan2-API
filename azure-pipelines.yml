@@ -70,6 +70,9 @@ stages:
             displayName: 'Setup SSH access'
 
           - script: |
+              pwd
+              ls -al
+              ls -al SplitMan2-run
               chmod +x SplitMan2-run/*.sh
               chmod +x SplitMan2-run/*.sh
               ls -al "$HOME/.ssh"

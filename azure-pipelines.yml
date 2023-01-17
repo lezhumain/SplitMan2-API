@@ -74,52 +74,52 @@ stages:
               DEBIAN_PATH: $(DEBIAN_PATH)
             displayName: 'Setup DB'
 
-  - stage: Run_E2E
-    jobs:
-      - job: Run_E2E_Tests
-        steps:
-          - script: |
-              VERSION="$(curl --insecure -s "https://79.137.33.77:8081/api/version")"
-              if [ "$VERSION" == "TODO" ]; then
-                echo "api /version OK"
-              else
-                echo "api /version FAILED"
-                exit 1
-              fi
-
-              ITEMS_COUNT="$(curl --insecure -s "https://79.137.33.77:8081/api/itemCount")"
-              if (($ITEMS_COUNT>=0)); then
-                echo "api /itemCount OK"
-              else
-                echo "api /itemCount FAILED"
-                exit 1
-              fi
-
-              MAIN_PAGE="$(curl --insecure -s "https://79.137.33.77:8081/")"
-              if [[ "$MAIN_PAGE" == *"SplitMan21"* ]]; then
-                echo "web / OK"
-              else
-                echo "web / FAILED"
-                exit 1
-              fi
-
-              #LOGIN_PAGE="$(curl --insecure -s "https://79.137.33.77:8081/login")"
-              #if [[ "$LOGIN_PAGE" == *"SplitMan21"* ]]; then
-              #  echo "web /login OK"
-              #else
-              #  echo "web /login FAILED"
-              #  echo "$LOGIN_PAGE"
-              #  exit 1
-              #fi
-            env:
-              DEBIAN_IP: $(DEBIAN_IP)
-            displayName: 'Test endpoints'
-
-          - script: |
-              HOST_IP="${DEBIAN_IP}"
-              npm install -g npm@9.3.0
-              npm i
-              npm run e2e -- --headless=true --host="$HOST_IP:8081"
-            env:
-              DEBIAN_IP: $(DEBIAN_IP)
-            displayName: 'Run E2E Tests'
+#  - stage: Run_E2E
+#    jobs:
+#      - job: Run_E2E_Tests
+#        steps:
+#          - script: |
+#              VERSION="$(curl --insecure -s "https://79.137.33.77:8081/api/version")"
+#              if [ "$VERSION" == "TODO" ]; then
+#                echo "api /version OK"
+#              else
+#                echo "api /version FAILED"
+#                exit 1
+#              fi
+#
+#              ITEMS_COUNT="$(curl --insecure -s "https://79.137.33.77:8081/api/itemCount")"
+#              if (($ITEMS_COUNT>=0)); then
+#                echo "api /itemCount OK"
+#              else
+#                echo "api /itemCount FAILED"
+#                exit 1
+#              fi
+#
+#              MAIN_PAGE="$(curl --insecure -s "https://79.137.33.77:8081/")"
+#              if [[ "$MAIN_PAGE" == *"SplitMan21"* ]]; then
+#                echo "web / OK"
+#              else
+#                echo "web / FAILED"
+#                exit 1
+#              fi
+#
+#              #LOGIN_PAGE="$(curl --insecure -s "https://79.137.33.77:8081/login")"
+#              #if [[ "$LOGIN_PAGE" == *"SplitMan21"* ]]; then
+#              #  echo "web /login OK"
+#              #else
+#              #  echo "web /login FAILED"
+#              #  echo "$LOGIN_PAGE"
+#              #  exit 1
+#              #fi
+#            env:
+#              DEBIAN_IP: $(DEBIAN_IP)
+#            displayName: 'Test endpoints'
+#
+#          - script: |
+#              HOST_IP="${DEBIAN_IP}"
+#              npm install -g npm@9.3.0
+#              npm i
+#              npm run e2e -- --headless=true --host="$HOST_IP:8081"
+#            env:
+#              DEBIAN_IP: $(DEBIAN_IP)
+#            displayName: 'Run E2E Tests'

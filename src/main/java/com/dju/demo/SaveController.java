@@ -12,7 +12,9 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -226,7 +228,7 @@ public class SaveController {
         final String pass = (String) o.get("password"),
                 userName = (String) o.get("username");
 
-        if(pass == null || pass.isEmpty() || userName == null || userName.isEmpty()) {
+        if(pass == null || pass.isEmpty() || userName == null || userName.isEmpty()) { // why?
             final String cookieStr = headers.get("cookie");
             final String[] cookies = cookieStr != null && cookieStr.contains(";")
                     ? cookieStr.split(";")
@@ -284,13 +286,23 @@ public class SaveController {
                 sessionRes.result.replace("hash", existingHash);
             }
 
-            // add session cookie
-            Cookie cook = new Cookie(COOKIE_NAME, (String) sessionRes.result.get("hash"));
-            cook.setHttpOnly(true);
-            cook.setPath("/");
-            cook.setSecure(false); // TODO true when we use https
+            // add session
+            final ResponseCookie responseCookie = ResponseCookie
+                    .from(COOKIE_NAME, (String) sessionRes.result.get("hash"))
+                    .secure(true)
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(12345)
+                    .sameSite("Strict")
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, responseCookie.toString());
+//            Cookie cook = new Cookie(COOKIE_NAME, (String) sessionRes.result.get("hash"));
+//            cook.setHttpOnly(true);
+//            cook.setPath("/");
+//            cook.setSecure(true); // TODO true when we use https
+//
+//            response.addCookie(cook);
 
-            response.addCookie(cook);
 
             JSONObject target = sessionRes.result.containsKey("user") && sessionRes.result.get("user") != null
                     ? (JSONObject) sessionRes.result.get("user")

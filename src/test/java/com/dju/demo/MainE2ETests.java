@@ -9,8 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
 class MainE2ETests {
-
-
 	private final SaveController sc;
 
 	public MainE2ETests() {
@@ -87,6 +85,132 @@ class MainE2ETests {
 		Assert.assertEquals(res1.size(), 2);
 
 		MainE2ETests._db = res1.toString();
+	}
+
+	/**
+	 * test bad email fails on register
+ 	 * @throws Exception
+	 */
+	@Test
+	void testRegisterBadEmail() throws Exception {
+		final int userIdData = -2;
+
+		JSONArray res1 = sc.updateStuff(-2, "{\n" +
+				"  \"id\": " + userIdData + ",\n" +
+				"  \"type\": \"user\",\n" +
+				"  \"email\": \"notanemail\",\n" +
+				"  \"username\": \"s\",\n" +
+				"  \"password\": \"s\",\n" +
+				"  \"invites\": []\n" +
+				"}", "[]");
+
+		Assert.assertNull(res1);
+	}
+
+	/**
+	 * test bad unix path email fails on register
+	 * @throws Exception
+	 */
+	@Test
+	void testRegisterBadEmailUnixPath() throws Exception {
+		final int userIdData = -2;
+
+		JSONArray res1 = sc.updateStuff(-2, "{\n" +
+				"  \"id\": " + userIdData + ",\n" +
+				"  \"type\": \"user\",\n" +
+				"  \"email\": \"../../../../../../../../../../../../../../../../\",\n" +
+				"  \"username\": \"s\",\n" +
+				"  \"password\": \"s\",\n" +
+				"  \"invites\": []\n" +
+				"}", "[]");
+
+		Assert.assertNull(res1);
+	}
+
+	/**
+	 * test bad unix path email fails on register
+	 * @throws Exception
+	 */
+	@Test
+	void testRegisterBadEmailWinPath() throws Exception {
+		final int userIdData = -2;
+
+		JSONArray res1 = sc.updateStuff(-2, "{\n" +
+				"  \"id\": " + userIdData + ",\n" +
+				"  \"type\": \"user\",\n" +
+				"  \"email\": \"C:\\Users\\djuuu\",\n" +
+				"  \"username\": \"s\",\n" +
+				"  \"password\": \"s\",\n" +
+				"  \"invites\": []\n" +
+				"}", "[]");
+
+		Assert.assertNull(res1);
+	}
+
+	@Test
+	void testRegisterExistingEmail() throws Exception {
+		final int userIdData = -2;
+
+		final JSONArray res1 = sc.updateStuff(-2, "{\n" +
+				"  \"id\": " + userIdData + ",\n" +
+				"  \"type\": \"user\",\n" +
+				"  \"email\": \"ddddd.browser.blackrobot.jen@wspt.co.uk\",\n" +
+				"  \"username\": \"s\",\n" +
+				"  \"password\": \"s\",\n" +
+				"  \"invites\": []\n" +
+				"}", "[]");
+
+		Assert.assertNotNull(res1);
+
+		System.out.println(res1.toJSONString());
+
+		final boolean containedb = res1.stream().filter(o1 -> ((JSONObject) o1).get("username").toString().equals("s")).findFirst().isPresent();
+		Assert.assertTrue(containedb);
+		Assert.assertEquals(res1.size(), 1);
+
+		final JSONArray res2 = sc.updateStuff(-2, "{\n" +
+				"  \"id\": " + userIdData + ",\n" +
+				"  \"type\": \"user\",\n" +
+				"  \"email\": \"ddddd.browser.blackrobot.jen@wspt.co.uk\",\n" +
+				"  \"username\": \"sa\",\n" +
+				"  \"password\": \"s\",\n" +
+				"  \"invites\": []\n" +
+				"}", res1.toJSONString());
+
+		Assert.assertNull(res2);
+	}
+
+	@Test
+	void testRegisterExistingUsername() throws Exception {
+		final int userIdData = -2;
+
+		final JSONArray res1 = sc.updateStuff(-2, "{\n" +
+				"  \"id\": " + userIdData + ",\n" +
+				"  \"type\": \"user\",\n" +
+				"  \"email\": \"ddddd.browser.blackrobot.jen@wspt.co.uk\",\n" +
+				"  \"username\": \"s\",\n" +
+				"  \"password\": \"s\",\n" +
+				"  \"invites\": []\n" +
+				"}", "[]");
+
+		Assert.assertNotNull(res1);
+
+		System.out.println(res1.toJSONString());
+
+		final boolean containedb = res1.stream().filter(o1 -> ((JSONObject) o1).get("username").toString().equals("s")).findFirst().isPresent();
+		Assert.assertTrue(containedb);
+		Assert.assertEquals(res1.size(), 1);
+
+		final JSONArray res2 = sc.updateStuff(-2, "{\n" +
+				"  \"id\": " + userIdData + ",\n" +
+				"  \"type\": \"user\",\n" +
+				"  \"email\": \"ddddd.browser.blackrobot@wspt.co.uk\",\n" +
+				"  \"username\": \"s\",\n" +
+				"  \"password\": \"s\",\n" +
+				"  \"invites\": []\n" +
+				"}", res1.toJSONString());
+
+		Assert.assertNull(res2);
 	}
 
 //	/**

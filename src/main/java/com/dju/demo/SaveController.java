@@ -1,9 +1,7 @@
 package com.dju.demo;
 
-import com.dju.demo.helpers.CMDHelper;
-import com.dju.demo.helpers.CMDHelperResponse;
-import com.dju.demo.helpers.FileHelper;
-import com.dju.demo.helpers.ND5Helper;
+import com.dju.demo.checkers.UserChecker;
+import com.dju.demo.helpers.*;
 import com.dju.demo.services.FileService;
 import com.dju.demo.services.IDataService;
 import com.dju.demo.services.MongodbService;
@@ -762,6 +760,12 @@ public class SaveController {
 
 //            final int userID = (int)Integer.parseInt(objectToUpdateOrAdd.get("id").toString());
             final String userEmail = (String)objectToUpdateOrAdd.get("email");
+
+            // check email
+            final UserChecker checker = new UserChecker(allObjects);
+            if (!checker.checkEmailValid(userEmail) || !checker.checkEmailUnused(userEmail) || !checker.checkUsernameUnused((String)objectToUpdateOrAdd.get("username"))) {
+                return null;
+            }
 
             Object[] allUsers = allObjects.stream().filter(o1 -> ((JSONObject)o1).containsKey("type") && ((JSONObject)o1).get("type").equals("user"))
 //                    .map(o -> (JSONObject)o)

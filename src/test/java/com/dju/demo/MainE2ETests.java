@@ -102,7 +102,47 @@ class MainE2ETests {
 				"  \"username\": \"s\",\n" +
 				"  \"password\": \"s\",\n" +
 				"  \"invites\": []\n" +
-				"}", MainE2ETests._db);
+				"}", "[]");
+
+		Assert.assertNull(res1);
+	}
+
+	/**
+	 * test bad unix path email fails on register
+	 * @throws Exception
+	 */
+	@Test
+	void testRegisterBadEmailUnixPath() throws Exception {
+		final int userIdData = -2;
+
+		JSONArray res1 = sc.updateStuff(-2, "{\n" +
+				"  \"id\": " + userIdData + ",\n" +
+				"  \"type\": \"user\",\n" +
+				"  \"email\": \"../../../../../../../../../../../../../../../../\",\n" +
+				"  \"username\": \"s\",\n" +
+				"  \"password\": \"s\",\n" +
+				"  \"invites\": []\n" +
+				"}", "[]");
+
+		Assert.assertNull(res1);
+	}
+
+	/**
+	 * test bad unix path email fails on register
+	 * @throws Exception
+	 */
+	@Test
+	void testRegisterBadEmailWinPath() throws Exception {
+		final int userIdData = -2;
+
+		JSONArray res1 = sc.updateStuff(-2, "{\n" +
+				"  \"id\": " + userIdData + ",\n" +
+				"  \"type\": \"user\",\n" +
+				"  \"email\": \"C:\\Users\\djuuu\",\n" +
+				"  \"username\": \"s\",\n" +
+				"  \"password\": \"s\",\n" +
+				"  \"invites\": []\n" +
+				"}", "[]");
 
 		Assert.assertNull(res1);
 	}

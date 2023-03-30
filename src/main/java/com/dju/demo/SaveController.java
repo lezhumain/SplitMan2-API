@@ -773,7 +773,7 @@ public class SaveController {
                 return null;
             }
 
-            System.out.println("deb 0");
+            
             Object[] allUsers = allObjects.stream().filter(o1 -> ((JSONObject)o1).containsKey("type") && ((JSONObject)o1).get("type").equals("user"))
 //                    .map(o -> (JSONObject)o)
                     .toArray();
@@ -805,7 +805,7 @@ public class SaveController {
             objectToUpdateOrAdd.replace("id", userID);
 
 
-            System.out.println("deb 1");
+            
 
             final boolean exists = Arrays.stream(allUsers)
                     .filter(o1 -> intEquals(((JSONObject)o1).get("id"), userID)
@@ -851,21 +851,21 @@ public class SaveController {
                 continue;
             }
 
-            System.out.println("deb 2");
+            
 
             // check if user's travel
             if(jo.get("type").equals("travel") && !myIds.contains(String.valueOf(jo.get("id").toString()))) {
                 continue;
             }
 
-            System.out.println("deb 3");
+            
 
             // check if user's expense
             if(jo.get("type").equals("expense") && !myIds.contains(String.valueOf(jo.get("tripId").toString()))) {
                 continue;
             }
 
-            System.out.println("deb 4");
+            
 
             // check if user
             if(jo.get("type").equals("user") && !intEquals(jo.get("id"), usserID)) {

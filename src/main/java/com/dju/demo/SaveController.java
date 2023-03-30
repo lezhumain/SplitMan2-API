@@ -805,8 +805,6 @@ public class SaveController {
             objectToUpdateOrAdd.replace("id", userID);
 
 
-            
-
             final boolean exists = Arrays.stream(allUsers)
                     .filter(o1 -> intEquals(((JSONObject)o1).get("id"), userID)
                         || ( ((JSONObject)o1).containsKey("email") && ((JSONObject)o1).get("email").equals(userEmail)))
@@ -851,21 +849,15 @@ public class SaveController {
                 continue;
             }
 
-            
-
             // check if user's travel
             if(jo.get("type").equals("travel") && !myIds.contains(String.valueOf(jo.get("id").toString()))) {
                 continue;
             }
 
-            
-
             // check if user's expense
             if(jo.get("type").equals("expense") && !myIds.contains(String.valueOf(jo.get("tripId").toString()))) {
                 continue;
             }
-
-            
 
             // check if user
             if(jo.get("type").equals("user") && !intEquals(jo.get("id"), usserID)) {

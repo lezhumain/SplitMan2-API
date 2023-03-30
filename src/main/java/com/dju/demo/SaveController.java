@@ -725,6 +725,7 @@ public class SaveController {
         } catch (Exception e) {
             System.out.println("Parse exception on update.");
             System.out.println(e.getMessage());
+            e.printStackTrace();
             System.out.println("Returning null");
             return null;
         }

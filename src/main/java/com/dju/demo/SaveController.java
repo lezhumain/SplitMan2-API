@@ -773,7 +773,6 @@ public class SaveController {
                 return null;
             }
 
-            
             Object[] allUsers = allObjects.stream().filter(o1 -> ((JSONObject)o1).containsKey("type") && ((JSONObject)o1).get("type").equals("user"))
 //                    .map(o -> (JSONObject)o)
                     .toArray();

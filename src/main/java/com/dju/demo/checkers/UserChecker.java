@@ -16,7 +16,8 @@ public class UserChecker {
 
     private boolean checkKeyUnused(final String key, final String value) {
         return !this._allObjects.stream().filter(o -> {
-            return ((String)((JSONObject)o).get(key)).equals(value);
+            final String target = (String)((JSONObject)o).get(key);
+            return target != null && target.equals(value);
         }).findFirst().isPresent();
     }
 

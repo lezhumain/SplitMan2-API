@@ -219,6 +219,9 @@ public class SaveController {
         try {
             o = (JSONObject)jp.parse(res);
         } catch (ParseException e) {
+            System.out.println("Erreur parsing payload");
+            System.out.println(res);
+            System.out.println(headers);
             response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
             return null;
         }
@@ -720,7 +723,9 @@ public class SaveController {
         try {
             return this.updateStuff(usserID, res, all);
         } catch (Exception e) {
-            System.out.println("Parse exception on update, returning \"null\"");
+            System.out.println("Parse exception on update.");
+            System.out.println(e.getMessage());
+            System.out.println("Returning null");
             return null;
         }
     }

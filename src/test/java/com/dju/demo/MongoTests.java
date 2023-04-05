@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
@@ -142,11 +143,55 @@ class MongoTests {
         Assertions.assertNull(getAllDoc3);
     }
 
+    /**
+     * `
+     * Make sure register doesn't accept specs chars in username or password
+     *
+     * @throws IOException
+     * @throws ParseException
+     * @throws NoSuchAlgorithmException
+     */
+    @Test
+    void checkRehisterExisting() throws IOException, ParseException, NoSuchAlgorithmException {
+        final String colName = "splitman";
+        MongoHelper _helper = new MongoHelper(HostIP.MONGO_IP, 27017, "mydb");
+
+        final List<Document> getAllDocs0 = _helper.getAllDocs(colName, true);
+        System.out.println("length: " + getAllDocs0.size());
+
+        SaveController sc = new SaveController();
+        String username = "a";
+
+        // existing name
+        List<Document> getAllDoc2 = testRegisterFor(username, username, username + "1@" + username + ".com", sc, _helper, colName, getAllDocs0, false, 0);
+        Assertions.assertEquals(getAllDoc2.size(), getAllDocs0.size());
+
+        // existing email
+        getAllDoc2 = testRegisterFor(username, username, username + "@" + username + "." + username, sc,
+                _helper, colName, getAllDocs0, false, 0);
+        Assertions.assertEquals(getAllDoc2.size(), getAllDocs0.size());
+    }
+
     private List<Document> testRegisterFor(String username, String password, SaveController sc, MongoHelper _helper,
                                            String colName, List<Document> getAllDocs0,
                                            boolean shouldBeNull) throws IOException, ParseException, NoSuchAlgorithmException {
+        return testRegisterFor(username, password, sc, _helper, colName, getAllDocs0, shouldBeNull, 1);
+    }
+    private List<Document> testRegisterFor(String username, String password, SaveController sc, MongoHelper _helper,
+                                       String colName, List<Document> getAllDocs0,
+                                       boolean shouldBeNull, int sizeOffset)
+            throws IOException, ParseException, NoSuchAlgorithmException {
+        return testRegisterFor(username, password, username.replace("User", "email"),
+                sc, _helper, colName, getAllDocs0, shouldBeNull, 1);
+    }
+
+    private List<Document> testRegisterFor(String username, String password, String email, SaveController sc,
+                                           MongoHelper _helper, String colName, List<Document> getAllDocs0,
+                                           boolean shouldBeNull, int sizeOffset)
+            throws IOException, ParseException, NoSuchAlgorithmException {
+        HttpServletResponse response = new HttpServletResponseMock();
         sc.register("{\"id\": -2, \"username\": \"" + username + "\", \"password\": \"" + password + "\", \"password1\": \"" + password + "\", " +
-                "\"type\": \"user\", \"email\": \"" + username.replace("User", "email") + "\", \"updating\": true}", null);
+                "\"type\": \"user\", \"email\": \"" + email + "\", \"updating\": true}",    response);
 
         final List<Document> getAllDocs = _helper.getAllDocs(colName, true);
         System.out.println("length: " + getAllDocs.size());
@@ -165,7 +210,7 @@ class MongoTests {
 
         Assert.assertNotNull(newUser);
 //        Assert.assertEquals(getAllDocs0.size(), getAllDocs.size() - 1);
-        Assert.assertEquals(getAllDocs.size(), getAllDocs0.size() + 1);
+        Assert.assertEquals(getAllDocs0.size() + sizeOffset, getAllDocs.size());
 
         return getAllDocs;
     }

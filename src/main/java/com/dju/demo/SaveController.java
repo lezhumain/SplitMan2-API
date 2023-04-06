@@ -481,8 +481,16 @@ public class SaveController {
     public JSONObject getUser(final String pass, final String userName, final String all) throws IOException, ParseException, NoSuchAlgorithmException {
         final JSONParser jp = new JSONParser();
         JSONArray arr = (JSONArray)jp.parse(all);
+        System.out.println("arr length: " + arr.size());
 
         final String hashPass = pass != null ? ND5Helper.hash(pass) : null;
+        System.out.println("hashPass: " + hashPass);
+
+        Optional<JSONObject> targetUser0 = arr.stream()
+                .filter(o1 -> ((JSONObject)o1).get("type").equals("user")
+                        && (((JSONObject)o1).get("username")).equals(userName))
+                .findFirst();
+        System.out.println("targetUser0 present: " + targetUser0.isPresent());
 
         Optional<JSONObject> targetUser = arr.stream()
                 .filter(o1 -> ((JSONObject)o1).get("type").equals("user")
@@ -824,56 +832,58 @@ public class SaveController {
                 objectToUpdateOrAdd.remove("password1");
             }
 
-            allObjects.add(objectToUpdateOrAdd);
-            return allObjects;
+//            allObjects.add(objectToUpdateOrAdd);
+//            return allObjects;
         }
-
+        else
+        {
 //        Object[] myIds = ((JSONArray)user.get("invites")).stream().map(o1 -> ((JSONObject)o1).get("tripID")).toArray(Object[]::new);
-        JSONArray myInvites = user.containsKey("invites") ? (JSONArray)user.get("invites") : new JSONArray();
+            JSONArray myInvites = user.containsKey("invites") ? (JSONArray)user.get("invites") : new JSONArray();
 //        List<Object> myIds = myInvites.stream().map(o1 -> ((JSONObject)o1).get("tripID")).collect(Collectors.toList());
-        List<String> myIds = (List<String>) myInvites.stream().map(o1 -> String.valueOf(((JSONObject)o1).get("tripID"))).distinct().collect(Collectors.toList());
+            List<String> myIds = (List<String>) myInvites.stream().map(o1 -> String.valueOf(((JSONObject)o1).get("tripID"))).distinct().collect(Collectors.toList());
 
-        int targetIndex = -1;
-        for(int i = 0; i < allObjects.size(); ++i) {
-            JSONObject jo = (JSONObject) allObjects.get(i);
-//            AItem iiii = (AItem)JsonConvert.DeserializeObject<AItem>(jo.toString());
-//            JsonPath jpp = new JsonPath(jo.toString());
-//            AItem aa = jpp.getObject(".", AItem.class);
+            int targetIndex = -1;
+            for(int i = 0; i < allObjects.size(); ++i) {
+                JSONObject jo = (JSONObject) allObjects.get(i);
+    //            AItem iiii = (AItem)JsonConvert.DeserializeObject<AItem>(jo.toString());
+    //            JsonPath jpp = new JsonPath(jo.toString());
+    //            AItem aa = jpp.getObject(".", AItem.class);
 
-            if(!jo.containsKey("id") || !jo.containsKey("type")) {
-                continue;
+                if(!jo.containsKey("id") || !jo.containsKey("type")) {
+                    continue;
+                }
+
+                if(!intEquals(jo.get("id"), objectToUpdateOrAdd.get("id")) || !intEquals(jo.get("type"), objectToUpdateOrAdd.get("type"))) {
+                    continue;
+                }
+
+                // check if user's travel
+                if(jo.get("type").equals("travel") && !myIds.contains(String.valueOf(jo.get("id").toString()))) {
+                    continue;
+                }
+
+                // check if user's expense
+                if(jo.get("type").equals("expense") && !myIds.contains(String.valueOf(jo.get("tripId").toString()))) {
+                    continue;
+                }
+
+                // check if user
+                if(jo.get("type").equals("user") && !intEquals(jo.get("id"), usserID)) {
+                    continue;
+                }
+
+                targetIndex = i;
+                break;
             }
 
-            if(!intEquals(jo.get("id"), objectToUpdateOrAdd.get("id")) || !intEquals(jo.get("type"), objectToUpdateOrAdd.get("type"))) {
-                continue;
+            if (targetIndex > -1) {
+                JSONObject target = ((JSONObject) allObjects.get(targetIndex));
+                if(target.containsKey("password")) {
+                    final String pass = (String)(target.get("password"));
+                    objectToUpdateOrAdd.replace("password", "", pass);
+                }
+                ((JSONArray)allObjects).remove(targetIndex) ;
             }
-
-            // check if user's travel
-            if(jo.get("type").equals("travel") && !myIds.contains(String.valueOf(jo.get("id").toString()))) {
-                continue;
-            }
-
-            // check if user's expense
-            if(jo.get("type").equals("expense") && !myIds.contains(String.valueOf(jo.get("tripId").toString()))) {
-                continue;
-            }
-
-            // check if user
-            if(jo.get("type").equals("user") && !intEquals(jo.get("id"), usserID)) {
-                continue;
-            }
-
-            targetIndex = i;
-            break;
-        }
-
-        if (targetIndex > -1) {
-            JSONObject target = ((JSONObject) allObjects.get(targetIndex));
-            if(target.containsKey("password")) {
-                final String pass = (String)(target.get("password"));
-                objectToUpdateOrAdd.replace("password", "", pass);
-            }
-            ((JSONArray)allObjects).remove(targetIndex) ;
         }
 
         objectToUpdateOrAdd.put("updating", true);

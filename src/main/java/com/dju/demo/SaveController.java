@@ -71,7 +71,7 @@ public class SaveController {
 
     // TODO check how to make private
     public String getAllObj() throws IOException, ParseException {
-//        try {
+//        try {return String.format("TODO (%s) (%s)", HOST_IP, HOST_IP.length());
 //            final String fileContent = FileHelper.get_instance().readFile(_dbFile);
 //            String lastL = getLastLine(fileContent);
 //
@@ -88,7 +88,7 @@ public class SaveController {
     @CrossOrigin(origins = "*")
     @GetMapping("/version")
     public String version() {
-        return String.format("TODO (%s)", HOST_IP);
+        return String.format("TODO (%s) (%s)", HOST_IP, HOST_IP.length());
     }
 
     @CrossOrigin(origins = "*")

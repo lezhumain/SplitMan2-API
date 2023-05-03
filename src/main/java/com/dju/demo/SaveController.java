@@ -88,7 +88,7 @@ public class SaveController {
     @CrossOrigin(origins = "*")
     @GetMapping("/version")
     public String version() {
-        return "TODO";
+        return String.format("TODO (%s)", HOST_IP);
     }
 
     @CrossOrigin(origins = "*")

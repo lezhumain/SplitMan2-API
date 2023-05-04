@@ -46,6 +46,8 @@ stages:
               bash ../SplitMan2-run/run_docker_e2e.sh "https" "$SREPO"
               docker save "$IMAGE" -o "$(Build.ArtifactStagingDirectory)/$IMAGE.tar"
             env:
+              MONGO_USER: $(MONGO_USER)
+              MONGO_PASS: $(MONGO_PASS)
               HOST_IP: $(DEBIAN_IP)
             displayName: 'Build containers'
 

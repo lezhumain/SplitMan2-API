@@ -76,4 +76,4 @@ stages:
 
           - publish: '$(Build.ArtifactStagingDirectory)/$(IMAGE).tar'
             displayName: 'Publish tar image'
-            artifact: splitman2api_tar
+            artifact: $(IMAGE)_tar

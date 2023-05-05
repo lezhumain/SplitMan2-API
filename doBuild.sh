@@ -32,11 +32,14 @@ cp src/main/java/com/dju/demo/Creds.java src/main/java/com/dju/demo/Creds.java.b
 sedi -e "s|MONGO_USER|$MONGO_USER|g" src/main/java/com/dju/demo/Creds.java
 sedi -e "s|MONGO_PASS|$MONGO_PASS|g" src/main/java/com/dju/demo/Creds.java
 
+cp pom.xml pom.xml.bk
+sedi -E "s|0.0.1-SNAPSHOT|$(node -e 'var d = new Date(); console.log(`${d.getFullYear() - 2022}.${d.getMonth() + 1}.${d.getDay()}`)')|" pom.xml
 
 mvn package -Dtest=Main*Tests
 cp target/demo*.jar target/app.jar
 
 mv src/main/java/com/dju/demo/HostIP.java.bk src/main/java/com/dju/demo/HostIP.java
 mv src/main/java/com/dju/demo/Creds.java.bk src/main/java/com/dju/demo/Creds.java
+mv pom.xml.bk pom.xml
 
 docker build -t splitman2api .

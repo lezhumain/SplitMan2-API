@@ -33,7 +33,9 @@ sedi -e "s|MONGO_USER|$MONGO_USER|g" src/main/java/com/dju/demo/Creds.java
 sedi -e "s|MONGO_PASS|$MONGO_PASS|g" src/main/java/com/dju/demo/Creds.java
 
 cp pom.xml pom.xml.bk
-sedi -E "s|0.0.1-SNAPSHOT|$(node -e 'var d = new Date(); console.log(`${d.getFullYear() - 2022}.${d.getMonth() + 1}.${d.getDay()}`)')|" pom.xml
+VERSION="$(node -e 'var d = new Date(); console.log(`${d.getFullYear() - 2022}.${d.getMonth() + 1}.${d.getDay()}`)')"
+echo "VERSION: $VERSION"
+sedi -E "s|0.0.1-SNAPSHOT|$VERSION|" pom.xml
 
 mvn package -Dtest=Main*Tests
 cp target/demo*.jar target/app.jar

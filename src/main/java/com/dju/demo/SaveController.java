@@ -6,6 +6,7 @@ import com.dju.demo.services.FileService;
 import com.dju.demo.services.IDataService;
 import com.dju.demo.services.MongodbService;
 import com.dju.demo.services.SQLLiteService;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -22,6 +23,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -67,6 +69,10 @@ public class SaveController {
         }else {
             _service = null;
         }
+    }
+
+    SaveController(final IDataService service) {
+        _service = service;
     }
 
     // TODO check how to make private
@@ -609,7 +615,8 @@ public class SaveController {
 
     @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
     @PostMapping("/invite")
-    public void invite(@CookieValue(COOKIE_NAME) String fooCookie, @RequestHeader Map<String, String> headers, @RequestBody String res, HttpServletResponse response) throws IOException, ParseException {
+    public void invite(@CookieValue(COOKIE_NAME) String fooCookie, @RequestHeader Map<String, String> headers,
+                       @RequestBody String res, HttpServletResponse response) throws IOException, ParseException {
         final int userID = this.checkUserID(fooCookie);
         response.addHeader("Access-Control-Allow-Credentials", "true");
 
@@ -653,6 +660,91 @@ public class SaveController {
         response.setStatus(HttpServletResponse.SC_NO_CONTENT);
     }
 
+
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
+    @PostMapping("/generateLink")
+    public JSONObject generateLink(@CookieValue(COOKIE_NAME) String fooCookie, @RequestBody String res, HttpServletResponse response) throws IOException, ParseException {
+        final int userID = this.checkUserID(fooCookie);
+        response.addHeader("Access-Control-Allow-Credentials", "true");
+
+        if(userID < 0) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return null;
+        }
+
+        final String linkBit = this.doGenerateLink(userID, res);
+        final String link = this.getFullLink(linkBit);
+
+        JSONObject resu = new JSONObject();
+        resu.put("link", link);
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        return resu;
+    }
+
+    public String getFullLink(String linkBit) {
+        return String.format("%s/api/join?link=%s", HOST_IP, linkBit);
+    }
+
+    @CrossOrigin(origins = {"http://86.18.16.122:8080", "https://86.18.16.122:8083", HOST_IP})
+    @PostMapping("/join")
+    public void join(@RequestParam String link, @CookieValue(COOKIE_NAME) String fooCookie, HttpServletResponse response) throws Exception {
+        final int userID = this.checkUserID(fooCookie);
+        response.addHeader("Access-Control-Allow-Credentials", "true");
+
+        if(userID < 0) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        final JSONArray dataAll = this.joinFromLink(userID, link);
+        if(dataAll == null) {
+            Logger.getAnonymousLogger().warning("Error while joining link");
+            response.setStatus(HttpServletResponse.SC_EXPECTATION_FAILED);
+        }
+        else
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+    }
+
+    public JSONArray joinFromLink(final int userID, final String link) throws Exception {
+        // decode link
+        final InviteLinkData ild = InviteLinkHelper.parseLink(link);
+
+        if(ild == null) {
+            return null;
+        }
+
+        JSONObject res = new JSONObject();
+        res.put("email", ""); // current user's email
+        res.put("userID", userID); // current user's ID (extra)
+        res.put("tripID", ild.getTravelID());
+
+        // add accepted invite
+        final JSONArray arr = this.doInvite(ild.getUserID(), res.toJSONString());
+
+        return arr;
+    }
+
+    // FIXME should be private but need to test
+    public String doGenerateLink(int userID, String res) {
+        // TODO check user exists?
+        final JSONParser jp = new JSONParser();
+        final JSONObject o;
+        try {
+            o = (JSONObject)jp.parse(res);
+        } catch (ParseException e) {
+            Logger.getAnonymousLogger().warning("Error: " + e.getMessage());
+            return null;
+        }
+
+        try {
+            return InviteLinkHelper.generateLink(new InviteLinkData(userID, Integer.parseInt(String.valueOf((Long)o.get("tripId")))));
+        } catch (Exception e) {
+            Logger.getAnonymousLogger().warning("Error: " + e.getMessage());
+            return null;
+        }
+    }
+
     public JSONArray doInvite(int userID, String res) throws ParseException, IOException {
         return doInvite(userID, res, getAllObj());
     }
@@ -669,12 +761,17 @@ public class SaveController {
         final int tripID = Integer.parseInt(String.valueOf(o.get("tripID")));
         final String email = (String)o.get("email");
 
+        final boolean hasUserID = o.containsKey("userID"); // should only be added from join link
+        final Long oUserID = hasUserID ? (Long)o.get("userID") : null;
+
 //        final String all = getAllObj();
         JSONArray arr = (JSONArray)jp.parse(all);
 
         Optional<JSONObject> targetUserOp = arr.stream()
                 .filter(o1 -> ((JSONObject)o1).get("type").equals("user")
-                        && (((JSONObject)o1).get("email")).equals(email))
+                        && (
+                                (((JSONObject)o1).get("email")).equals(email) || (hasUserID && ((Long)((JSONObject)o1).get("id")).equals(oUserID))
+                        ))
                 .findFirst();
 
         if(!targetUserOp.isPresent()) {
@@ -711,7 +808,7 @@ public class SaveController {
         }
 
         JSONObject newInvite = new JSONObject();
-        newInvite.put("isAccepted", false);
+        newInvite.put("isAccepted", hasUserID);
         newInvite.put("tripID", tripID);
         newInvite.put("tripName", targetTrip.get().get("name"));
 

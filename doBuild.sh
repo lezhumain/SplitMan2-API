@@ -37,7 +37,10 @@ VERSION="$(node -e 'var d = new Date(); console.log(`${d.getFullYear() - 2022}.$
 echo "VERSION: $VERSION"
 sedi -E "s|0.0.1-SNAPSHOT|$VERSION|" pom.xml
 
+rm -f target/*.jar
 mvn package -Dtest=Main*Tests
+echo $?
+echo "i'm before cp"
 cp target/demo*.jar target/app.jar
 
 mv src/main/java/com/dju/demo/HostIP.java.bk src/main/java/com/dju/demo/HostIP.java

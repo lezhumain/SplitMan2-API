@@ -7,6 +7,8 @@ import java.util.Base64;
 import javax.crypto.*;
 
 public class EncryptionDecryptionAES {
+    // mainl;y implemented from https://stackoverflow.com/a/34098587/3482730
+
     Cipher cipher;
     String transfo; // TODO rename
     private Key _secretKey;

@@ -6,7 +6,12 @@ public class SaveControllerMock extends SaveController {
     private final int _testUserID;
 
     public SaveControllerMock(int testUserID) {
-        super();
+        super(new IDataServiceMock("[]"));
+        _testUserID = testUserID;
+    }
+
+    public SaveControllerMock(int testUserID, final String all) {
+        super(new IDataServiceMock(all));
         _testUserID = testUserID;
     }
 

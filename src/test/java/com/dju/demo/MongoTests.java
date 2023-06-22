@@ -146,7 +146,9 @@ class MongoTests {
                                            String colName, List<Document> getAllDocs0,
                                            boolean shouldBeNull) throws IOException, ParseException, NoSuchAlgorithmException {
         sc.register("{\"id\": -2, \"username\": \"" + username + "\", \"password\": \"" + password + "\", \"password1\": \"" + password + "\", " +
-                "\"type\": \"user\", \"email\": \"" + username.replace("User", "email") + "\", \"updating\": true}", null);
+                "\"type\": \"user\", \"email\": \""
+                + String.format("%s@%s.com", username, username.replace("User", "email"))
+                + "\", \"updating\": true}", null);
 
         final List<Document> getAllDocs = _helper.getAllDocs(colName, true);
         System.out.println("length: " + getAllDocs.size());

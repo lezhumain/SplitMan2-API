@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.dju.demo.HostIP.HOST_IP;
+import static com.dju.demo.SessionEnv._sessionFile;
 
 //import io.restassured.path.json.JsonPath;
 
@@ -55,7 +56,6 @@ public class SaveController {
     //    private final String _dbFile = Paths.get(System.getProperty("user.dir"), "target.txt").toString();
 
 //    private final String _dbFile = Paths.get(".", "target.txt").toString(); // TODO remove
-    private final String _sessionFile = Paths.get(".", "target_sessions.txt").toString();
     private JSONObject _currentUser;
 
     SaveController() {
@@ -132,8 +132,6 @@ public class SaveController {
         try {
 //            final String fooCookie = getCookieFromHeaders(headers); // in case local CORS errors
 
-            final String res = removeAllPasswords(getAllObj()); // TODO put at the end ?
-
             JSONArray allSessions = getAllSessions();
             if(allSessions == null || allSessions.size() == 0) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -147,6 +145,8 @@ public class SaveController {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return null;
             }
+
+            final String res = removeAllPasswords(getAllObj()); // TODO put at the end ?
 
             return res;
         } catch (IOException | ParseException e) {
